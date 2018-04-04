@@ -19,7 +19,6 @@ u=FEMParabolic2Dvectorial(Coordinates,Elements,1,1,Dirichlet,DirichletValue,Neum
 %Wolframalpha av f-u:(1 - 4 y + 2 y^2 + x (-2 + 4 y), 1 + 2 x^2 + 4 x (-1 + y) - 2 y) 
 error1=norm(u(:,1)-uexact(X,Y),2)
 error2=norm(u(:,2)-uexact(X,Y),2)
-blablabla=10
 
 subplot(2,1,1)
 trisurf(Elements,X,Y,u(:,1))
