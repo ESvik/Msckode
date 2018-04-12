@@ -11,9 +11,9 @@ Dirichlet=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coor
 DirichletValue=0;
 
 %% Time
-t_0=0;
+t_0=0.9;
 tau=0.1;
-T=0.1;
+T=1;
 
 %% Problem
 uexact = @(x,y,t) t.*x.*y.*(x-1).*(y-1);
