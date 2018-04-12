@@ -15,14 +15,13 @@ function u = FEMParabolic2Dvectorial(Coordinates,Elements,C,B,Dirichlet,Dirichle
         Coefficients(i,:)=MatOfCoord\bb;
     end
     Coefficients=[Coefficients(1,:);Coefficients(1,:);Coefficients(2,:);Coefficients(2,:);Coefficients(3,:);Coefficients(3,:)];
-    GaussValues = zeros(3,3);
-    for i = 1:3
+    GaussValues = zeros(6,3);
+    for i = 1:6
         GaussValues(i,1) = (Coefficients(i,1) + Coefficients(i,2)*1/6 + Coefficients(i,3)*1/6);
         GaussValues(i,2) = (Coefficients(i,1) + Coefficients(i,2)*2/3 + Coefficients(i,3)*1/6);
         GaussValues(i,3) = (Coefficients(i,1) + Coefficients(i,2)*1/6 + Coefficients(i,3)*2/3);
     end
-    GaussValues=[GaussValues(1,:);GaussValues(1,:);GaussValues(2,:);GaussValues(2,:);GaussValues(3,:);GaussValues(3,:)];
-    
+
     %Assembly
     for k = 1:number_of_elements
     nodes = Elements(k,:);
