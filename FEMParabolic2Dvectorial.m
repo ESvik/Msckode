@@ -26,6 +26,7 @@ function u = FEMParabolic2Dvectorial(Coordinates,Elements,C,B,Dirichlet,Dirichle
     for k = 1:number_of_elements
     nodes = Elements(k,:);
     vertices = Coordinates(nodes,:);
+    hVect=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2);1,vertices(3,1),vertices(3,2)]\h(nodes);
     nodes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
     
     
@@ -85,12 +86,13 @@ function u = FEMParabolic2Dvectorial(Coordinates,Elements,C,B,Dirichlet,Dirichle
     VectCoeff2=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2);1,vertices(3,1),vertices(3,2)]\(fVector([nodes(2),nodes(4),nodes(6)]));
     fVectGauss1 = [VectCoeff1'*[1;GaussNodes(:,1)],VectCoeff1'*[1;GaussNodes(:,2)],VectCoeff1'*[1;GaussNodes(:,3)]];
     fVectGauss2 = [VectCoeff2'*[1;GaussNodes(:,1)],VectCoeff2'*[1;GaussNodes(:,2)],VectCoeff2'*[1;GaussNodes(:,3)]];
+    hVectGauss = [hVect'*[1;GaussNodes(:,1)],hVect'*[1;GaussNodes(:,2)],hVect'*[1;GaussNodes(:,3)]];
     BL=zeros(6,1);
     for j= 1:2:5
-    BL(j)=sum((fGauss(1,:)+fVectGauss1).*GaussValues(j,:));
+    BL(j)=sum((fGauss(1,:)+fVectGauss1).*GaussValues(j,:))+(ARefTriinv(1,1)*Coefficients(j,2)+ARefTriinv(2,1)*Coefficients(j,3))*sum(hVectGauss);
     end
     for j=2:2:6
-    BL(j) =sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:));
+    BL(j) =sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:))+(ARefTriinv(1,2)*Coefficients(j,2)+ARefTriinv(2,2)*Coefficients(j,3))*sum(hVectGauss);
     end
     b(nodes) = b(nodes) + 1/6*det(ARefTri)*BL;
     end
