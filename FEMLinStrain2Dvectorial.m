@@ -88,7 +88,7 @@ function u = FEMLinStrain2Dvectorial(Coordinates,Elements,C,B,Dirichlet,Dirichle
     
     
     
-    A(nodes,nodes) = A(nodes,nodes) + ALdiv+ALreg;
+    A(nodes,nodes) = A(nodes,nodes) + ALdiv+C*ALreg;
     % b
     GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
     fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
@@ -102,7 +102,7 @@ function u = FEMLinStrain2Dvectorial(Coordinates,Elements,C,B,Dirichlet,Dirichle
     BL(j)=sum((fGauss(1,:)+fVectGauss1).*GaussValues(j,:))+(ARefTriinv(1,1)*Coefficients(j,2)+ARefTriinv(2,1)*Coefficients(j,3))*sum(hVectGauss);
     end
     for j=2:2:6
-    BL(j) =sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:))+(ARefTriinv(1,2)*Coefficients(j,2)+ARefTriinv(2,2)*Coefficients(j,3))*sum(hVectGauss);
+    BL(j)=sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:))+(ARefTriinv(1,2)*Coefficients(j,2)+ARefTriinv(2,2)*Coefficients(j,3))*sum(hVectGauss);
     end
     b(nodes) = b(nodes) + 1/6*det(ARefTri)*BL;
     end

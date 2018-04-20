@@ -1,4 +1,4 @@
-% Solver for C(u,v)+B(nabla*u,nabla*v)=(f,v) +(h,nabla * v)   in 2D domain with 2D Range
+% Solver for C(u,v)+B(nabla*u,nabla*v)=(f,v) +(h,nabla * v)-(nabla * w,v)   in 2D domain with 2D Range
 
 function u = FEMParabolic2Dvectorial(Coordinates,Elements,C,B,Dirichlet,DirichletValue,Neumann,g,f,h,fVector)
     NN=length(Coordinates(:,1));
@@ -28,7 +28,6 @@ function u = FEMParabolic2Dvectorial(Coordinates,Elements,C,B,Dirichlet,Dirichle
     vertices = Coordinates(nodes,:);
     hVect=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2);1,vertices(3,1),vertices(3,2)]\h(nodes);
     nodes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
-    
     
     %Transformation to refTriangle
     [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
