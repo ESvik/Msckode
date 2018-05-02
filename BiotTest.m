@@ -2,7 +2,7 @@
 
 %% Mesh
 x_min=0; x_max=1; y_min=0; y_max=1;
-[x,y]=meshgrid(x_min:0.05:x_max,y_min:0.05:y_max);
+[x,y]=meshgrid(x_min:0.01:x_max,y_min:0.01:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
 DT=delaunayTriangulation(X,Y);
 Coordinates=DT.Points;
@@ -25,7 +25,7 @@ p=ones(NN,1);
 
 
    
-    u=FEMLinStrain2Dvectorial(Coordinates,Elements,1,1,Dirichlet,DirichletValue,Neumann,0,f,p,zeros(2*NN,1));
+    u=FEMLinStrain2DvectorialP2(Coordinates,Elements,1,1,Dirichlet,DirichletValue,Neumann,0,f,p,zeros(2*NN,1));
     t=t+tau;
 
 
