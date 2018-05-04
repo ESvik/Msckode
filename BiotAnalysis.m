@@ -22,7 +22,7 @@ T=0.1;
 %% Problem
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
 vexact = @(x,y,t) t.*x.*y.*(x-1).*(y-1);
-lambda = 1; M=10; alpha=1; mu=1; kappa=10^(-2);
+lambda = 27.778*10^9; M=100*10^9; alpha=1; mu=41.667*10^9; kappa=10^(-16);
 u_0=zeros(2*NN,1);
 u0=uexact(X,Y,t_0);
 u_0(1:2:2*NN-1)=u0(:,1);
@@ -39,7 +39,7 @@ f_2=@(x,y,t) 1/M*x.*y.*(x-1).*(y-1)+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1))-
 Analysis=zeros(12,2);
 A_delta=(2/M+2*tau*kappa+2*alpha^2/(2*mu+lambda));
 B_delta=(alpha^2/(2*mu+lambda));
-delta_opt=min(A_delta/(2*B_delta),2)
+delta_opt=min(A_delta/(2*B_delta),2);
 counter=1;
 for delta = [1:0.1:2.5,delta_opt]
     delta
@@ -70,9 +70,9 @@ for delta = [1:0.1:2.5,delta_opt]
     counter=counter+1;
 
 end
-plot(Analysis(1:16,1),Analysis(1:16,2),'k')
+plot(Analysis(1:16,1),Analysis(1:16,2))
 hold on
-plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','MarkerSize',10)
 
 %subplot(3,1,1)
 %trisurf(Elements,X,Y,u(1:2:2*NN-1))
