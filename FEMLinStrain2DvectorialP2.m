@@ -107,8 +107,8 @@ function u = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Dirich
     
     %Boundary
     for i=1:length(Dirichlet)
-        A(Dirichlet(i),:)=0; A(Dirichlet(i),Dirichlet(i))=1;
-        b(Dirichlet(i))=DirichletValue;
+        A(Dirichlet(i,1),:)=0; A(Dirichlet(i,1),Dirichlet(i,1))=1;
+        b(Dirichlet(i,1))=Dirichlet(i,2);
     end
     
 %    for j = 1:size(Neumann,1)

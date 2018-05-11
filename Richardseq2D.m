@@ -20,10 +20,10 @@ T=8;
 %% Problem
 uexact = @(x,y,t) x.*y.*(1-x).*(1-y).*t;
 %Coefficients
-k=1; L_b=10; steps=1; b_m=1;
-%pol=@(u) richardnonlin(u);
-%b= @(u) b_m.*u + (L_b-b_m)*(20/27)*pol(u);
-b = @(u) step(u,steps,L_b,b_m); 
+k=0.01; L_b=10; steps=1; b_m=1;
+pol=@(u) richardnonlin(u);
+b= @(u) b_m.*u + (L_b-b_m)*(20/27)*pol(u);
+%b = @(u) step(u,steps,L_b,b_m); 
 f1= @(x,y,t) (b_m+(L_b-b_m)*(20/27).*(-5.4*uexact(x,y,t).^2+5.4*uexact(x,y,t))).*uexact(x,y,1)+2*k*t.*((1-y).*y+(1-x).*x);
 f2= @(x,y,t) f1(x,y,t)*tau;
 u_0 = @(x,y) 0;
@@ -32,7 +32,7 @@ LL = @(g) 1./(2*(1-g));
 
 
 %% Solver
-L=L_b;
+L=L_b*0.5;
 t=t_0+tau;
 u = uexact(X,Y,t_0);
 while t < T+tau
@@ -41,7 +41,7 @@ while t < T+tau
     error = 1;
     while error > 10^(-8)
         u_prev=u;
-        u=FEMParabolic2D(Coordinates,Elements,L,k*tau,Dirichlet,DirichletValue,Neumann,g,f,zeros(2*NN,1),b(u_old)'-b(u_prev)'+L*u_prev);
+        u=FEMParabolic2D(Coordinates,Elements,L,k*tau,Dirichlet,DirichletValue,Neumann,g,f,zeros(2*NN,1),b(u_old)-b(u_prev)+L*u_prev);
         error=norm(u-u_prev,inf)
     end
     t=t+tau;
@@ -56,7 +56,7 @@ while t < T+tau
     error = 1; CompErrPrev=1;
     while error > 10^(-8)
         u_prev=u;
-        u=FEMParabolic2D(Coordinates,Elements,L,k*tau,Dirichlet,DirichletValue,Neumann,g,f,zeros(2*NN,1),b(u_old)'-b(u_prev)'+L*u_prev);
+        u=FEMParabolic2D(Coordinates,Elements,L,k*tau,Dirichlet,DirichletValue,Neumann,g,f,zeros(2*NN,1),b(u_old)-b(u_prev)+L*u_prev);
         error=norm(u-u_prev,inf);
         CompErr=norm(u-uprecomp,inf);
         ErrorComparison = [ErrorComparison,CompErr/CompErrPrev];
