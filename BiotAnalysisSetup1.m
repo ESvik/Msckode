@@ -1,4 +1,4 @@
-%% Biot Analysis
+%% Biot Analysis New setup: natural BC on top
 %% MESH
 x_min=0; x_max=1; y_min=0; y_max=1;
 h=0.1;
@@ -38,12 +38,12 @@ for i = 1:6
     GaussValuesP2(i,3) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*2/3+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*(2/3)^2+CoefficientsP2(i,6)*1/6*2/3);
 end
 Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
-Dirichletu = zeros(8*(1/h+1),2);
-Dirichletu(:,1)=[2*find(Coordinates(:,1)==x_min);2*find(Coordinates(:,1)==x_min)-ones(length(find(Coordinates(:,1)==x_min)),1);2*find(Coordinates(:,1)==x_max);2*find(Coordinates(:,1)==x_max)-ones(length(find(Coordinates(:,1)==x_max)),1);2*find(Coordinates(:,2)==y_min);2*find(Coordinates(:,2)==y_min)-ones(length(find(Coordinates(:,2)==y_min)),1);2*find(Coordinates(:,2)==y_max);2*find(Coordinates(:,2)==y_max)-ones(length(find(Coordinates(:,2)==y_max)),1)];
+Dirichletu = zeros(6*(1/h+1),2);
+Dirichletu(:,1)=[2*find(Coordinates(:,1)==x_min);2*find(Coordinates(:,1)==x_min)-ones(length(find(Coordinates(:,1)==x_min)),1);2*find(Coordinates(:,1)==x_max);2*find(Coordinates(:,1)==x_max)-ones(length(find(Coordinates(:,1)==x_max)),1);2*find(Coordinates(:,2)==y_min);2*find(Coordinates(:,2)==y_min)-ones(length(find(Coordinates(:,2)==y_min)),1)];
 Dirichletu(1:2*(1/h+1),2)=0;
 Dirichletu(2*(1/h+1)+1:4*(1/h+1),2)=0;
 Dirichletu(4*(1/h+1)+1:6*(1/h+1),2)=0;
-Dirichletu(6*(1/h+1)+1:8*(1/h+1),2)=0;
+
 
 DirichletValue=0;
 
@@ -55,7 +55,7 @@ T=1.01;
 %% Problem
 for kappa = [10^(-16),10^(-14),10^(-12),10^(-10)]
 %pressurescale=1/kappa*10^(-4);
-pressurescale = 10^10;
+pressurescale = 10^14;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
 pexact = @(x,y,t) pressurescale*t.*x.*y.*(x-1).*(y-1);
 lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-16);

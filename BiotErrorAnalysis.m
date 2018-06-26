@@ -11,10 +11,40 @@ Elements=DT.ConnectivityList;
 Neumann=[];
 g=0;
 NN=length(X);
+%Basis and its evaluation points for P1
+Coefficients= zeros(3,3);
+MatOfCoord=[1,0,0;1,1,0;1,0,1];
+for i =1:3
+    bb=zeros(3,1);
+    bb(i)=1;
+    Coefficients(i,:)=MatOfCoord\bb;
+end
+GaussValues = zeros(3,3);
+for i = 1:3
+    GaussValues(i,1) = 1/6*(Coefficients(i,1) + Coefficients(i,2)*1/6 + Coefficients(i,3)*1/6);
+    GaussValues(i,2) = 1/6*(Coefficients(i,1) + Coefficients(i,2)*2/3 + Coefficients(i,3)*1/6);
+    GaussValues(i,3) = 1/6*(Coefficients(i,1) + Coefficients(i,2)*1/6 + Coefficients(i,3)*2/3);
+end
+%Basis and its evaluation points for P2
+CoefficientsP2= zeros(3,6);
+MatOfCoord=[1,0,0,0,0,0;1,1,0,1,0,0;1,0,1,0,1,0;1,1/2,0,1/4,0,0;1,0,1/2,0,1/4,0;1,1/2,1/2,1/4,1/4,1/4];   
+CoefficientsP2(1,:)=MatOfCoord\[1;0;0;1/2;1/2;0];
+CoefficientsP2(2,:)=MatOfCoord\[0;1;0;1/2;0;1/2];
+CoefficientsP2(3,:)=MatOfCoord\[0;0;1;0;1/2;1/2];    
+CoefficientsP2=[CoefficientsP2(1,:);CoefficientsP2(1,:);CoefficientsP2(2,:);CoefficientsP2(2,:);CoefficientsP2(3,:);CoefficientsP2(3,:)];
+GaussValuesP2 = zeros(6,3);
+for i = 1:6
+    GaussValuesP2(i,1) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*1/6+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*1/6^2+CoefficientsP2(i,6)*1/6^2);
+    GaussValuesP2(i,2) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*2/3 + CoefficientsP2(i,3)*1/6+CoefficientsP2(i,4)*(2/3)^2+CoefficientsP2(i,5)*1/6^2+CoefficientsP2(i,6)*1/6*2/3);
+    GaussValuesP2(i,3) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*2/3+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*(2/3)^2+CoefficientsP2(i,6)*1/6*2/3);
+end
 Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
 Dirichletu = zeros(8*(1/h+1),2);
 Dirichletu(:,1)=[2*find(Coordinates(:,1)==x_min);2*find(Coordinates(:,1)==x_min)-ones(length(find(Coordinates(:,1)==x_min)),1);2*find(Coordinates(:,1)==x_max);2*find(Coordinates(:,1)==x_max)-ones(length(find(Coordinates(:,1)==x_max)),1);2*find(Coordinates(:,2)==y_min);2*find(Coordinates(:,2)==y_min)-ones(length(find(Coordinates(:,2)==y_min)),1);2*find(Coordinates(:,2)==y_max);2*find(Coordinates(:,2)==y_max)-ones(length(find(Coordinates(:,2)==y_max)),1)];
-
+Dirichletu(1:2*(1/h+1),2)=0;
+Dirichletu(2*(1/h+1)+1:4*(1/h+1),2)=0;
+Dirichletu(4*(1/h+1)+1:6*(1/h+1),2)=0;
+Dirichletu(6*(1/h+1)+1:8*(1/h+1),2)=0;
 
 DirichletValue=0;
 
@@ -24,11 +54,11 @@ tau=10^(-1);
 T=10^(-1);
 
 %% Problem
-pressurescale=10^(10);
+pressurescale=10^13;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
 pexact = @(x,y,t) pressurescale*t.*x.*y.*(x-1).*(y-1);
-lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^10; alpha=1; kappa=10^(-10);
-%lambda = 1; mu=1; M=1; alpha=10^(0); kappa=10^(0)
+lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^10; alpha=1; kappa=10^(-12);
+%lambda = 1; mu=1; M=1; alpha=1; kappa=10^(0);
 u_0=zeros(2*NN,1);
 u0=uexact(X,Y,t_0);
 u_0(1:2:2*NN-1)=u0(:,1);
@@ -49,28 +79,45 @@ L=alpha^2/((mu+lambda)*delta);
 scale=1;
 %% Precomputing
 t=t_0+tau;
-u=u_0;
-p=p_0/scale;
-while t<T+tau
-    Dirichletu(1:2*(1/h+1),2)=0;
-    Dirichletu(2*(1/h+1)+1:4*(1/h+1),2)=0;
-    Dirichletu(4*(1/h+1)+1:6*(1/h+1),2)=0;
-    Dirichletu(6*(1/h+1)+1:8*(1/h+1),2)=0;
+
+
+f_10=@(x,y) f_1(x,y,t);
+f_20=@(x,y) tau*f_2(x,y,t);
+[p,Ap] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,zeros(2*NN,1),1/M*p_0+L*p_0,1,0,Coefficients,GaussValues);
+[u,Au] = FEMLinStrain2DvectorialP2(Coordinates,Elements,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(2*NN,1),1,0,CoefficientsP2,GaussValuesP2);
+u_old = u_0;
+p_old = p_0;
+errorp=norm(p-p_old,inf)/norm(p,inf)
+erroru=norm(u-u_old,inf)/norm(u,inf)
+    while errorp>10^(-12) || erroru>10^(-12)
+        u_prev=u;
+        p_prev=p;
+        [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
+        [u,~] = FEMLinStrain2DvectorialP2(Coordinates,Elements,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(2*NN,1),0,Au,CoefficientsP2,GaussValuesP2);
+        errorp=norm(p-p_prev,inf)/norm(p,inf)
+        erroru=norm(u-u_prev,inf)/norm(u,inf)
+        %error = sqrt(errorp^2+erroru^2)
+    end
+t=t+tau
+
+
+
+while t<T
     u_old = u;
     p_old = p;
     f_1t = @(x,y) f_1(x,y,t);
     f_2t = @(x,y) tau*f_2(x,y,t)*scale;
     errorp = 1; erroru=1;
-    while errorp>10^(-12) | erroru>10^(-12)
+    while errorp>10^(-12) || erroru>10^(-12)
         u_prev=u;
         p_prev=p;
-        p=FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_2t,-alpha*(u_prev-u_old),1/M*p_old+L*p_prev);
-        u=FEMLinStrain2DvectorialP2(Coordinates,Elements,2*mu,lambda,Dirichletu,DirichletValue,Neumann,g,f_1t,alpha*p,zeros(2*NN,1));
-        errorp=norm(p-p_prev,inf)/norm(p,inf) 
-        erroru=norm(u-u_prev,inf)/norm(u,inf)
+        [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
+        [u,~] = FEMLinStrain2DvectorialP2(Coordinates,Elements,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(2*NN,1),0,Au,CoefficientsP2,GaussValuesP2);
+        errorp=norm(p-p_prev,inf)/norm(p,inf);
+        erroru=norm(u-u_prev,inf)/norm(u,inf);
         %error = sqrt(errorp^2+erroru^2)
     end
-    t=t+tau;
+    t=t+tau
 end
 uPreComp=u;
 pPreComp=p;
