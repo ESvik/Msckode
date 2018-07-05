@@ -1,6 +1,6 @@
 % Solver for C(u,v)+B(u',v')=(f,v) in 2D domain
 
-function [u,A] = FEMParabolic2D(Coordinates,Elements,C,B,Dirichlet,DirichletValue,Neumann,g,f,biotdisplacement,fVector,firstrun,Apre,Coefficients,GaussValues)
+function [u,A] = FEMParabolic2D(Coordinates,Elements,C,B,Dirichlet,DirichletValue,Neumann,g,f,biotdisplacement,CoordinatesP2,ElementsP2,fVector,firstrun,Apre,Coefficients,GaussValues)
     NN=length(Coordinates(:,1));
     A=sparse(NN,NN);
     b=zeros(NN,1);
@@ -29,6 +29,9 @@ function [u,A] = FEMParabolic2D(Coordinates,Elements,C,B,Dirichlet,DirichletValu
         for k = 1:number_of_elements
             nodes = Elements(k,:);
             vertices = Coordinates(nodes,:);
+            nodesP2=ElementsP2(k,:);
+            verticesP2=CoordinatesP2(nodesP2,:);
+            nodesP2=[2*nodesP2(1)-1,2*nodesP2(1),2*nodesP2(2)-1,2*nodesP2(2),2*nodesP2(3)-1,2*nodesP2(3),2*nodesP2(4)-1,2*nodesP2(4),2*nodesP2(5)-1,2*nodesP2(5),2*nodesP2(6)-1,2*nodesP2(6)];
     
      
             %Transformation to refTriangle
@@ -51,17 +54,19 @@ function [u,A] = FEMParabolic2D(Coordinates,Elements,C,B,Dirichlet,DirichletValu
     
             % b
             %biotdisplacement
-            modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
-            wVect1=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2);1,vertices(3,1),vertices(3,2)]\[w(modes(1));w(modes(3));w(modes(5))];
-            wVect2=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2);1,vertices(3,1),vertices(3,2)]\[w(modes(2));w(modes(4));w(modes(6))];
-    
+            %modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
+            wVect1=[1,verticesP2(1,1),verticesP2(1,2),verticesP2(1,1)^2,verticesP2(1,2)^2,verticesP2(1,1)*verticesP2(1,2);1,verticesP2(2,1),verticesP2(2,2),verticesP2(2,1)^2,verticesP2(2,2)^2,verticesP2(2,1)*verticesP2(2,2);1,verticesP2(3,1),verticesP2(3,2),verticesP2(3,1)^2,verticesP2(3,2)^2,verticesP2(3,1)*verticesP2(3,2);1,verticesP2(4,1),verticesP2(4,2),verticesP2(4,1)^2,verticesP2(4,2)^2,verticesP2(4,1)*verticesP2(4,2);1,verticesP2(5,1),verticesP2(5,2),verticesP2(5,1)^2,verticesP2(5,2)^2,verticesP2(5,1)*verticesP2(5,2);1,verticesP2(6,1),verticesP2(6,2),verticesP2(6,1)^2,verticesP2(6,2)^2,verticesP2(6,1)*verticesP2(6,2)]\w(nodesP2(1:2:11));
+            wVect2=[1,verticesP2(1,1),verticesP2(1,2),verticesP2(1,1)^2,verticesP2(1,2)^2,verticesP2(1,1)*verticesP2(1,2);1,verticesP2(2,1),verticesP2(2,2),verticesP2(2,1)^2,verticesP2(2,2)^2,verticesP2(2,1)*verticesP2(2,2);1,verticesP2(3,1),verticesP2(3,2),verticesP2(3,1)^2,verticesP2(3,2)^2,verticesP2(3,1)*verticesP2(3,2);1,verticesP2(4,1),verticesP2(4,2),verticesP2(4,1)^2,verticesP2(4,2)^2,verticesP2(4,1)*verticesP2(4,2);1,verticesP2(5,1),verticesP2(5,2),verticesP2(5,1)^2,verticesP2(5,2)^2,verticesP2(5,1)*verticesP2(5,2);1,verticesP2(6,1),verticesP2(6,2),verticesP2(6,1)^2,verticesP2(6,2)^2,verticesP2(6,1)*verticesP2(6,2)]\w(nodesP2(2:2:12));
+            wDerivative=@(x,y) (wVect1(2)+wVect2(3))+(2*wVect1(4)+wVect2(6))*x+(2*wVect2(5)+wVect1(6))*y;
+            wGauss = [wDerivative(GaussNodes(1,1),GaussNodes(2,1)),wDerivative(GaussNodes(1,2),GaussNodes(2,2)),wDerivative(GaussNodes(1,3),GaussNodes(2,3))];
+            
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
             VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
             fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
             BL=zeros(3,1);
             for j= 1:3
-                BL(j) = det(ARefTri)*sum((fGauss+fVectGauss).*GaussValues(j,:))+det(ARefTri)*sum(GaussValues(j,:))*(wVect1(2)+wVect2(3));
+                BL(j) = det(ARefTri)*sum((fGauss+fVectGauss+wGauss).*GaussValues(j,:));
             end
             b(nodes) = b(nodes) + BL;
     
@@ -88,26 +93,31 @@ function [u,A] = FEMParabolic2D(Coordinates,Elements,C,B,Dirichlet,DirichletValu
         for k = 1:number_of_elements
             nodes = Elements(k,:);
             vertices = Coordinates(nodes,:);
+            nodesP2=ElementsP2(k,:);
+            verticesP2=CoordinatesP2(nodesP2,:);
+            nodesP2=[2*nodesP2(1)-1,2*nodesP2(1),2*nodesP2(2)-1,2*nodesP2(2),2*nodesP2(3)-1,2*nodesP2(3),2*nodesP2(4)-1,2*nodesP2(4),2*nodesP2(5)-1,2*nodesP2(5),2*nodesP2(6)-1,2*nodesP2(6)];
     
      
             %Transformation to refTriangle
             [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
             % b
             %biotdisplacement
-            modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
-            wVect1=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2);1,vertices(3,1),vertices(3,2)]\[w(modes(1));w(modes(3));w(modes(5))];
-            wVect2=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2);1,vertices(3,1),vertices(3,2)]\[w(modes(2));w(modes(4));w(modes(6))];
-        
-            GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
+             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
+            wVect1=[1,verticesP2(1,1),verticesP2(1,2),verticesP2(1,1)^2,verticesP2(1,2)^2,verticesP2(1,1)*verticesP2(1,2);1,verticesP2(2,1),verticesP2(2,2),verticesP2(2,1)^2,verticesP2(2,2)^2,verticesP2(2,1)*verticesP2(2,2);1,verticesP2(3,1),verticesP2(3,2),verticesP2(3,1)^2,verticesP2(3,2)^2,verticesP2(3,1)*verticesP2(3,2);1,verticesP2(4,1),verticesP2(4,2),verticesP2(4,1)^2,verticesP2(4,2)^2,verticesP2(4,1)*verticesP2(4,2);1,verticesP2(5,1),verticesP2(5,2),verticesP2(5,1)^2,verticesP2(5,2)^2,verticesP2(5,1)*verticesP2(5,2);1,verticesP2(6,1),verticesP2(6,2),verticesP2(6,1)^2,verticesP2(6,2)^2,verticesP2(6,1)*verticesP2(6,2)]\w(nodesP2(1:2:11));
+            wVect2=[1,verticesP2(1,1),verticesP2(1,2),verticesP2(1,1)^2,verticesP2(1,2)^2,verticesP2(1,1)*verticesP2(1,2);1,verticesP2(2,1),verticesP2(2,2),verticesP2(2,1)^2,verticesP2(2,2)^2,verticesP2(2,1)*verticesP2(2,2);1,verticesP2(3,1),verticesP2(3,2),verticesP2(3,1)^2,verticesP2(3,2)^2,verticesP2(3,1)*verticesP2(3,2);1,verticesP2(4,1),verticesP2(4,2),verticesP2(4,1)^2,verticesP2(4,2)^2,verticesP2(4,1)*verticesP2(4,2);1,verticesP2(5,1),verticesP2(5,2),verticesP2(5,1)^2,verticesP2(5,2)^2,verticesP2(5,1)*verticesP2(5,2);1,verticesP2(6,1),verticesP2(6,2),verticesP2(6,1)^2,verticesP2(6,2)^2,verticesP2(6,1)*verticesP2(6,2)]\w(nodesP2(2:2:12));
+            wDerivative=@(x,y) (wVect1(2)+wVect2(3))+(2*wVect1(4)+wVect2(6))*x+(2*wVect2(5)+wVect1(6))*y;
+            wGauss = [wDerivative(GaussNodes(1,1),GaussNodes(2,1)),wDerivative(GaussNodes(1,2),GaussNodes(2,2)),wDerivative(GaussNodes(1,3),GaussNodes(2,3))];
+            
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
             VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
             fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
             BL=zeros(3,1);
             for j= 1:3
-                BL(j) = det(ARefTri)*sum((fGauss+fVectGauss).*GaussValues(j,:))+det(ARefTri)*sum(GaussValues(j,:))*(wVect1(2)+wVect2(3));
+                BL(j) = det(ARefTri)*sum((fGauss+fVectGauss+wGauss).*GaussValues(j,:));
             end
             b(nodes) = b(nodes) + BL;
-        end
+    
+       end
         A=Apre;
         for i=1:length(Dirichlet)
             b(Dirichlet(i))=DirichletValue;
