@@ -42,12 +42,12 @@ for i = 1:12
     GaussValuesP2(i,3) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*2/3+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*(2/3)^2+CoefficientsP2(i,6)*1/6*2/3);
 end
 Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
-Dirichletu = zeros(8*(1/h+1),2);
-Dirichletu(:,1)=[2*find(Coordinates(:,1)==x_min);2*find(Coordinates(:,1)==x_min)-ones(length(find(Coordinates(:,1)==x_min)),1);2*find(Coordinates(:,1)==x_max);2*find(Coordinates(:,1)==x_max)-ones(length(find(Coordinates(:,1)==x_max)),1);2*find(Coordinates(:,2)==y_min);2*find(Coordinates(:,2)==y_min)-ones(length(find(Coordinates(:,2)==y_min)),1);2*find(Coordinates(:,2)==y_max);2*find(Coordinates(:,2)==y_max)-ones(length(find(Coordinates(:,2)==y_max)),1)];
-Dirichletu(1:2*(1/h+1),2)=0;
-Dirichletu(2*(1/h+1)+1:4*(1/h+1),2)=0;
-Dirichletu(4*(1/h+1)+1:6*(1/h+1),2)=0;
-Dirichletu(6*(1/h+1)+1:8*(1/h+1),2)=0;
+Dirichletu = zeros(8*(2/h+1),2);
+Dirichletu(:,1)=[2*find(CoordinatesP2(:,1)==x_min);2*find(CoordinatesP2(:,1)==x_min)-ones(length(find(CoordinatesP2(:,1)==x_min)),1);2*find(CoordinatesP2(:,1)==x_max);2*find(CoordinatesP2(:,1)==x_max)-ones(length(find(CoordinatesP2(:,1)==x_max)),1);2*find(CoordinatesP2(:,2)==y_min);2*find(CoordinatesP2(:,2)==y_min)-ones(length(find(CoordinatesP2(:,2)==y_min)),1);2*find(CoordinatesP2(:,2)==y_max);2*find(CoordinatesP2(:,2)==y_max)-ones(length(find(CoordinatesP2(:,2)==y_max)),1)];
+Dirichletu(1:2*(2/h+1),2)=0;
+Dirichletu(2*(2/h+1)+1:4*(2/h+1),2)=0;
+Dirichletu(4*(2/h+1)+1:6*(2/h+1),2)=0;
+Dirichletu(6*(2/h+1)+1:8*(2/h+1),2)=0;
 
 DirichletValue=0;
 
@@ -57,7 +57,7 @@ tau=10^(-1);
 T=0.1;
 
 %% Problem
-for kappa = [10^(-16),10^(-14),10^(-12),10^(-10)]
+for kappa = [10^(-16),10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)]
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
@@ -96,7 +96,7 @@ for delta = [1.6:0.1:3.6,delta_opt]
     errorp=norm(p-p_old,inf)/norm(p,inf);
     erroru=norm(u-u_old,inf)/norm(u,inf);
     iterations=1;
-    while errorp>10^(-12) || erroru>10^(-12)
+    while errorp>10^(-8) || erroru>10^(-8)
         u_prev=u;
         p_prev=p;
         [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
@@ -114,7 +114,7 @@ while t<T+tau
     f_1t = @(x,y) f_1(x,y,t);
     f_2t = @(x,y) tau*f_2(x,y,t);
     errorp = 1; erroru=1;
-    while errorp>10^(-12) || erroru>10^(-12)
+    while errorp>10^(-8) || erroru>10^(-8)
         u_prev=u;
         p_prev=p;
         [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);

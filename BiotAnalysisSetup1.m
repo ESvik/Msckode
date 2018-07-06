@@ -56,7 +56,7 @@ tau=10^(-1);
 T=0.1;
 
 %% Problem
-for kappa = [10^(-16),10^(-14),10^(-12),10^(-10)]
+for kappa = [10^(-16),10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)]
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
@@ -95,7 +95,7 @@ for delta = [1.6:0.1:3.6,delta_opt]
     errorp=norm(p-p_old,inf)/norm(p,inf);
     erroru=norm(u-u_old,inf)/norm(u,inf);
     iterations=1;
-    while errorp>10^(-12) || erroru>10^(-12)
+    while errorp>10^(-6) || erroru>10^(-6)
         u_prev=u;
         p_prev=p;
         [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
@@ -113,7 +113,7 @@ while t<T+tau
     f_1t = @(x,y) f_1(x,y,t);
     f_2t = @(x,y) tau*f_2(x,y,t);
     errorp = 1; erroru=1;
-    while errorp>10^(-12) || erroru>10^(-12)
+    while errorp>10^(-6) || erroru>10^(-6)
         u_prev=u;
         p_prev=p;
         [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
@@ -132,8 +132,6 @@ plot(Analysis(1:21,1),Analysis(1:21,2))
 hold on
 plot(Analysis(22,1),Analysis(22,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
-plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-
 % subplot(3,1,1)
 % trisurf(Elements,X,Y,u(1:2:2*NN-1))
 % subplot(3,1,2)
