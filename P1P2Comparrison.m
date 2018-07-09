@@ -5,7 +5,7 @@ uexact = @(x,y) (x-1).*x.*y.*(y-1);
 x_min=0; x_max=1; y_min=0; y_max=1;
 ErrorP2 = [];
 ErrorP1 = [];
-for h=[1/2,1/4,1/8,1/16,1/32]
+for h=[1/2,1/4,1/8,1/16]
 %h=1/8;
 [x,y]=meshgrid(x_min:h:x_max,y_min:h:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
