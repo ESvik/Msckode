@@ -1,10 +1,12 @@
-%% P2 Elliptic test
+%P1 - P2 Comparrison
+
 f = @(x,y) -2*x.*(x-1)-2*y.*(y-1);
 uexact = @(x,y) (x-1).*x.*y.*(y-1);
 x_min=0; x_max=1; y_min=0; y_max=1;
-Error = [];
-%for h=[1/2,1/4,1/8,1/16,1/32]
-h=1/8;
+ErrorP2 = [];
+ErrorP1 = [];
+for h=[1/2,1/4,1/8,1/16,1/32]
+%h=1/8;
 [x,y]=meshgrid(x_min:h:x_max,y_min:h:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
 DT=delaunayTriangulation(X,Y);
@@ -37,11 +39,31 @@ Dirichletu((2/h+1)+1:2*(2/h+1),2)=0;
 Dirichletu(2*(2/h+1)+1:3*(2/h+1),2)=0;
 Dirichletu(3*(2/h+1)+1:4*(2/h+1),2)=0;
 
+Coefficients= zeros(3,3);
+MatOfCoord=[1,0,0;1,1,0;1,0,1];
+for i =1:3
+    bb=zeros(3,1);
+    bb(i)=1;
+    Coefficients(i,:)=MatOfCoord\bb;
+end
+GaussValues = zeros(3,3);
+for i = 1:3
+    GaussValues(i,1) = 1/6*(Coefficients(i,1) + Coefficients(i,2)*1/6 + Coefficients(i,3)*1/6);
+    GaussValues(i,2) = 1/6*(Coefficients(i,1) + Coefficients(i,2)*2/3 + Coefficients(i,3)*1/6);
+    GaussValues(i,3) = 1/6*(Coefficients(i,1) + Coefficients(i,2)*1/6 + Coefficients(i,3)*2/3);
+end
+Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
+DirichletValue=0;
 
 
-u=FEMElliptic2DP2(CoordinatesP2,ElementsP2,1,Dirichletu,f,CoefficientsP2,GaussValuesP2,NN);
+uP1=FEMElliptic2DP1(Coordinates,Elements,1,Dirichletp,DirichletValue,f,Coefficients,GaussValues);
+uP2=FEMElliptic2DP2(CoordinatesP2,ElementsP2,1,Dirichletu,f,CoefficientsP2,GaussValuesP2,NN);
 
-%Error=[Error,norm(u-uexact(CoordinatesP2(:,1),CoordinatesP2(:,2)),2)]
+ErrorP2=[ErrorP2,norm(uP2-uexact(CoordinatesP2(:,1),CoordinatesP2(:,2)),2)]
+ErrorP1=[ErrorP1,norm(uP1-uexact(Coordinates(:,1),Coordinates(:,2)),2)]
+end
 
-subplot(2,1,1)
-trisurf(Elements,CoordinatesP2(:,1),CoordinatesP2(:,2),u)
+% subplot(2,1,1)
+% trisurf(Elements,CoordinatesP2(:,1),CoordinatesP2(:,2),uP2)
+% subplot(2,1,2);
+% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),uP1)
