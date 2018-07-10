@@ -36,53 +36,71 @@ function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Ne
             [ARefTriinv,~]=RefTriangleMap(vertices(:,1),vertices(:,2));
             %ARefTriinv=ARefTri^(-1);
             %A
-            ALdiv=zeros(12,12);
+            dphix = @(x,y,i) ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*x+Coefficients(i,6)*y)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*y+Coefficients(i,6)*x);
+            dphiy = @(x,y,i) ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*x+Coefficients(i,6)*y)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*y+Coefficients(i,6)*x);
+
+            
+            ALreg=zeros(12,12);
             for i =1:2:11
                 for j = 1:2:11
-                    ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);
+                    ip = @(x,y) dphix(x,y,i)*dphix(x,y,j) + 1/2*dphiy(x,y,i)*dphiy(x,y,j);
+                    ALreg(i,j) = 1/6*C*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);
                 end
             end
             for i =1:2:11
                 for j = 2:2:12
-                    ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);    
+                    ip = @(x,y) 1/2*dphiy(x,y,i)*dphix(x,y,j);
+                    ALreg(i,j) = 1/6*C*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);    
                 end
             end
             for i =2:2:12
                 for j = 1:2:11
-                    ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);
+                    ip = @(x,y) 1/2*dphix(x,y,i)*dphiy(x,y,j);
+                    ALreg(i,j) = 1/6*C*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,1)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,1)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);
                 end
             end
             for i =2:2:12
                 for j = 2:2:12
-                    ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);
+                    ip = @(x,y) dphiy(x,y,i)*dphiy(x,y,j) + 1/2*dphix(x,y,i)*dphix(x,y,j);
+                    ALreg(i,j) = 1/6*C*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/6*B*det(ARefTri)*sum([(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*1/6+Coefficients(i,6)*2/3)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*2/3+Coefficients(i,6)*1/6))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*1/6+Coefficients(j,6)*2/3)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*2/3+Coefficients(j,6)*1/6)),(ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*2/3+Coefficients(i,6)*1/6)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*1/6+Coefficients(i,6)*2/3))*(ARefTriinv(1,2)*(Coefficients(j,2)+2*Coefficients(j,4)*2/3+Coefficients(j,6)*1/6)+ARefTriinv(2,2)*(Coefficients(j,3)+2*Coefficients(j,5)*1/6+Coefficients(j,6)*2/3))]);
                 end
             end
      
-            ALreg=zeros(12,12);
-            dphix = @(x,y,i) Coefficients(i,2)+2*Coefficients(i,4)*x+Coefficients(i,6)*y;
-            dphiy = @(x,y,i) Coefficients(i,3)+2*Coefficients(i,5)*y+Coefficients(i,6)*x;
+            ALdiv=zeros(12,12);
             for i =1:2:11
                 for j=1:2:11
-                    ALreg(i,j)=1/6*det(ARefTri)*sum([(ARefTriinv(1,1)*dphix(1/6,1/6,i)+ARefTriinv(2,1)*dphiy(1/6,1/6,i))*(ARefTriinv(1,1)*dphix(1/6,1/6,j)+ARefTriinv(2,1)*dphiy(1/6,1/6,j))+1/2*(dphiy(1/6,1/6,i)*ARefTriinv(2,2)+dphix(1/6,1/6,i)*ARefTriinv(1,2))*(dphiy(1/6,1/6,j)*ARefTriinv(2,2)+dphix(1/6,1/6,j)*ARefTriinv(1,2)),(ARefTriinv(1,1)*dphix(2/3,1/6,i)+ARefTriinv(2,1)*dphiy(2/3,1/6,i))*(ARefTriinv(1,1)*dphix(2/3,1/6,j)+ARefTriinv(2,1)*dphiy(2/3,1/6,j))+1/2*(dphiy(2/3,1/6,i)*ARefTriinv(2,2)+dphix(2/3,1/6,i)*ARefTriinv(1,2))*(dphiy(2/3,1/6,j)*ARefTriinv(2,2)+dphix(2/3,1/6,j)*ARefTriinv(1,2)),(ARefTriinv(1,1)*dphix(1/6,2/3,i)+ARefTriinv(2,1)*dphiy(1/6,2/3,i))*(ARefTriinv(1,1)*dphix(1/6,2/3,j)+ARefTriinv(2,1)*dphiy(1/6,2/3,j))+1/2*(dphiy(1/6,2/3,i)*ARefTriinv(2,2)+dphix(1/6,2/3,i)*ARefTriinv(1,2))*(dphiy(1/6,2/3,j)*ARefTriinv(2,2)+dphix(1/6,2/3,j)*ARefTriinv(1,2))]);
+                    ip = @(x,y) dphix(x,y,i)*dphix(x,y,j);
+                    ALdiv(i,j) = 1/6*B*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/6*det(ARefTri)*sum([(ARefTriinv(1,1)*dphix(1/6,1/6,i)+ARefTriinv(2,1)*dphiy(1/6,1/6,i))*(ARefTriinv(1,1)*dphix(1/6,1/6,j)+ARefTriinv(2,1)*dphiy(1/6,1/6,j))+1/2*(dphiy(1/6,1/6,i)*ARefTriinv(2,2)+dphix(1/6,1/6,i)*ARefTriinv(1,2))*(dphiy(1/6,1/6,j)*ARefTriinv(2,2)+dphix(1/6,1/6,j)*ARefTriinv(1,2)),(ARefTriinv(1,1)*dphix(2/3,1/6,i)+ARefTriinv(2,1)*dphiy(2/3,1/6,i))*(ARefTriinv(1,1)*dphix(2/3,1/6,j)+ARefTriinv(2,1)*dphiy(2/3,1/6,j))+1/2*(dphiy(2/3,1/6,i)*ARefTriinv(2,2)+dphix(2/3,1/6,i)*ARefTriinv(1,2))*(dphiy(2/3,1/6,j)*ARefTriinv(2,2)+dphix(2/3,1/6,j)*ARefTriinv(1,2)),(ARefTriinv(1,1)*dphix(1/6,2/3,i)+ARefTriinv(2,1)*dphiy(1/6,2/3,i))*(ARefTriinv(1,1)*dphix(1/6,2/3,j)+ARefTriinv(2,1)*dphiy(1/6,2/3,j))+1/2*(dphiy(1/6,2/3,i)*ARefTriinv(2,2)+dphix(1/6,2/3,i)*ARefTriinv(1,2))*(dphiy(1/6,2/3,j)*ARefTriinv(2,2)+dphix(1/6,2/3,j)*ARefTriinv(1,2))]);
                 end
             end
             for i =2:2:12
                 for j=2:2:12
-                    ALreg(i,j)=1/6*det(ARefTri)*sum([(dphix(1/6,1/6,i)*ARefTriinv(1,2)+dphiy(1/6,1/6,i)*ARefTriinv(2,2))*(dphix(1/6,1/6,j)*ARefTriinv(1,2)+dphiy(1/6,1/6,j)*ARefTriinv(2,2))+1/2*(dphiy(1/6,1/6,i)*ARefTriinv(2,1)+dphix(1/6,1/6,i)*ARefTriinv(1,1))*(dphiy(1/6,1/6,j)*ARefTriinv(2,1)+dphix(1/6,1/6,j)*ARefTriinv(1,1)),(dphix(2/3,1/6,i)*ARefTriinv(1,2)+dphiy(2/3,1/6,i)*ARefTriinv(2,2))*(dphix(2/3,1/6,j)*ARefTriinv(1,2)+dphiy(2/3,1/6,j)*ARefTriinv(2,2))+1/2*(dphiy(2/3,1/6,i)*ARefTriinv(2,1)+dphix(2/3,1/6,i)*ARefTriinv(1,1))*(dphiy(2/3,1/6,j)*ARefTriinv(2,1)+dphix(2/3,1/6,j)*ARefTriinv(1,1)),(dphix(1/6,2/3,i)*ARefTriinv(1,2)+dphiy(1/6,2/3,i)*ARefTriinv(2,2))*(dphix(1/6,2/3,j)*ARefTriinv(1,2)+dphiy(1/6,2/3,j)*ARefTriinv(2,2))+1/2*(dphiy(1/6,2/3,i)*ARefTriinv(2,1)+dphix(1/6,2/3,i)*ARefTriinv(1,1))*(dphiy(1/6,2/3,j)*ARefTriinv(2,1)+dphix(1/6,2/3,j)*ARefTriinv(1,1))]);
+                    ip = @(x,y) dphiy(x,y,i)*dphiy(x,y,j);
+                    ALdiv(i,j) = 1/6*B*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/6*det(ARefTri)*sum([(dphix(1/6,1/6,i)*ARefTriinv(1,2)+dphiy(1/6,1/6,i)*ARefTriinv(2,2))*(dphix(1/6,1/6,j)*ARefTriinv(1,2)+dphiy(1/6,1/6,j)*ARefTriinv(2,2))+1/2*(dphiy(1/6,1/6,i)*ARefTriinv(2,1)+dphix(1/6,1/6,i)*ARefTriinv(1,1))*(dphiy(1/6,1/6,j)*ARefTriinv(2,1)+dphix(1/6,1/6,j)*ARefTriinv(1,1)),(dphix(2/3,1/6,i)*ARefTriinv(1,2)+dphiy(2/3,1/6,i)*ARefTriinv(2,2))*(dphix(2/3,1/6,j)*ARefTriinv(1,2)+dphiy(2/3,1/6,j)*ARefTriinv(2,2))+1/2*(dphiy(2/3,1/6,i)*ARefTriinv(2,1)+dphix(2/3,1/6,i)*ARefTriinv(1,1))*(dphiy(2/3,1/6,j)*ARefTriinv(2,1)+dphix(2/3,1/6,j)*ARefTriinv(1,1)),(dphix(1/6,2/3,i)*ARefTriinv(1,2)+dphiy(1/6,2/3,i)*ARefTriinv(2,2))*(dphix(1/6,2/3,j)*ARefTriinv(1,2)+dphiy(1/6,2/3,j)*ARefTriinv(2,2))+1/2*(dphiy(1/6,2/3,i)*ARefTriinv(2,1)+dphix(1/6,2/3,i)*ARefTriinv(1,1))*(dphiy(1/6,2/3,j)*ARefTriinv(2,1)+dphix(1/6,2/3,j)*ARefTriinv(1,1))]);
                 end
             end
             for i =1:2:11
                 for j=2:2:12
-                    ALreg(i,j)=1/12*det(ARefTri)*sum([(dphiy(1/6,1/6,i)*ARefTriinv(2,2)+dphix(1/6,1/6,i)*ARefTriinv(1,2))*(dphiy(1/6,1/6,j)*ARefTriinv(2,1)+dphix(1/6,1/6,j)*ARefTriinv(1,1)),(dphiy(2/3,1/6,i)*ARefTriinv(2,2)+dphix(2/3,1/6,i)*ARefTriinv(1,2))*(dphiy(2/3,1/6,j)*ARefTriinv(2,1)+dphix(2/3,1/6,j)*ARefTriinv(1,1)),(dphiy(1/6,2/3,i)*ARefTriinv(2,2)+dphix(1/6,2/3,i)*ARefTriinv(1,2))*(dphiy(1/6,2/3,j)*ARefTriinv(2,1)+dphix(1/6,2/3,j)*ARefTriinv(1,1))]);
+                    ip = @(x,y) dphix(x,y,i)*dphiy(x,y,j);
+                    ALdiv(i,j) = 1/6*B*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/12*det(ARefTri)*sum([(dphiy(1/6,1/6,i)*ARefTriinv(2,2)+dphix(1/6,1/6,i)*ARefTriinv(1,2))*(dphiy(1/6,1/6,j)*ARefTriinv(2,1)+dphix(1/6,1/6,j)*ARefTriinv(1,1)),(dphiy(2/3,1/6,i)*ARefTriinv(2,2)+dphix(2/3,1/6,i)*ARefTriinv(1,2))*(dphiy(2/3,1/6,j)*ARefTriinv(2,1)+dphix(2/3,1/6,j)*ARefTriinv(1,1)),(dphiy(1/6,2/3,i)*ARefTriinv(2,2)+dphix(1/6,2/3,i)*ARefTriinv(1,2))*(dphiy(1/6,2/3,j)*ARefTriinv(2,1)+dphix(1/6,2/3,j)*ARefTriinv(1,1))]);
                 end
             end
             for i =2:2:12
                 for j=1:2:11
-                    ALreg(i,j)=1/12*det(ARefTri)*sum([(dphiy(1/6,1/6,j)*ARefTriinv(2,2)+dphix(1/6,1/6,j)*ARefTriinv(1,2))*(dphiy(1/6,1/6,i)*ARefTriinv(2,1)+dphix(1/6,1/6,i)*ARefTriinv(1,1)),(dphiy(2/3,1/6,j)*ARefTriinv(2,2)+dphix(2/3,1/6,j)*ARefTriinv(1,2))*(dphiy(2/3,1/6,i)*ARefTriinv(2,1)+dphix(2/3,1/6,i)*ARefTriinv(1,1)),(dphiy(1/6,2/3,j)*ARefTriinv(2,2)+dphix(1/6,2/3,j)*ARefTriinv(1,2))*(dphiy(1/6,2/3,i)*ARefTriinv(2,1)+dphix(1/6,2/3,i)*ARefTriinv(1,1))]);
+                    ip = @(x,y) dphiy(x,y,i)*dphix(x,y,j);
+                    ALdiv(i,j) = 1/6*B*det(ARefTri)*(ip(1/6,1/6)+ip(1/6,2/3)+ip(2/3,1/6));
+                    %ALdiv(i,j)=1/12*det(ARefTri)*sum([(dphiy(1/6,1/6,j)*ARefTriinv(2,2)+dphix(1/6,1/6,j)*ARefTriinv(1,2))*(dphiy(1/6,1/6,i)*ARefTriinv(2,1)+dphix(1/6,1/6,i)*ARefTriinv(1,1)),(dphiy(2/3,1/6,j)*ARefTriinv(2,2)+dphix(2/3,1/6,j)*ARefTriinv(1,2))*(dphiy(2/3,1/6,i)*ARefTriinv(2,1)+dphix(2/3,1/6,i)*ARefTriinv(1,1)),(dphiy(1/6,2/3,j)*ARefTriinv(2,2)+dphix(1/6,2/3,j)*ARefTriinv(1,2))*(dphiy(1/6,2/3,i)*ARefTriinv(2,1)+dphix(1/6,2/3,i)*ARefTriinv(1,1))]);
                 end
             end
 
-            A(nodes,nodes) = A(nodes,nodes) + ALdiv+C*ALreg;
+            A(nodes,nodes) = A(nodes,nodes) + ALdiv+ALreg;
             % b
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
@@ -93,10 +111,10 @@ function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Ne
             hVectGauss = [hVect'*[1;GaussNodes(:,1)],hVect'*[1;GaussNodes(:,2)],hVect'*[1;GaussNodes(:,3)]];
             BL=zeros(12,1);
             for j= 1:2:11
-                BL(j)=sum((fGauss(1,:)+fVectGauss1).*GaussValues(j,:))+(ARefTriinv(1,1)*Coefficients(j,2)+ARefTriinv(2,1)*Coefficients(j,3))*sum(hVectGauss);
+                BL(j)=sum((fGauss(1,:)+fVectGauss1).*GaussValues(j,:))+sum([dphix(1/6,1/6,j),dphix(2/3,1/6,j),dphix(1/6,2/3,j)].*hVectGauss);
             end
             for j=2:2:12
-                BL(j)=sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:))+(ARefTriinv(1,2)*Coefficients(j,2)+ARefTriinv(2,2)*Coefficients(j,3))*sum(hVectGauss);
+                BL(j)=sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:))+sum([dphiy(1/6,1/6,j),dphiy(2/3,1/6,j),dphiy(1/6,2/3,j)].*hVectGauss);
             end
             b(nodes) = b(nodes) + 1/6*det(ARefTri)*BL;
     
@@ -130,6 +148,9 @@ function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Ne
         %Transformation to refTriangle
         [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
         [ARefTriinv,~]=RefTriangleMap(vertices(:,1),vertices(:,2));
+        dphix = @(x,y,i) ARefTriinv(1,1)*(Coefficients(i,2)+2*Coefficients(i,4)*x+Coefficients(i,6)*y)+ARefTriinv(2,1)*(Coefficients(i,3)+2*Coefficients(i,5)*y+Coefficients(i,6)*x);
+        dphiy = @(x,y,i) ARefTriinv(1,2)*(Coefficients(i,2)+2*Coefficients(i,4)*x+Coefficients(i,6)*y)+ARefTriinv(2,2)*(Coefficients(i,3)+2*Coefficients(i,5)*y+Coefficients(i,6)*x);
+
         %ARefTriinv=ARefTri^(-1);
         %b
         GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
@@ -140,12 +161,12 @@ function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Ne
         fVectGauss2 = [VectCoeff2'*[1;GaussNodes(:,1)],VectCoeff2'*[1;GaussNodes(:,2)],VectCoeff2'*[1;GaussNodes(:,3)]];
         hVectGauss = [hVect'*[1;GaussNodes(:,1)],hVect'*[1;GaussNodes(:,2)],hVect'*[1;GaussNodes(:,3)]];
         BL=zeros(12,1);
-        for j= 1:2:11
-            BL(j)=sum((fGauss(1,:)+fVectGauss1).*GaussValues(j,:))+(ARefTriinv(1,1)*Coefficients(j,2)+ARefTriinv(2,1)*Coefficients(j,3))*sum(hVectGauss);
-        end
-        for j=2:2:12
-            BL(j)=sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:))+(ARefTriinv(1,2)*Coefficients(j,2)+ARefTriinv(2,2)*Coefficients(j,3))*sum(hVectGauss);
-        end
+         for j= 1:2:11
+             BL(j)=sum((fGauss(1,:)+fVectGauss1).*GaussValues(j,:))+sum([dphix(1/6,1/6,j),dphix(2/3,1/6,j),dphix(1/6,2/3,j)].*hVectGauss);
+         end
+         for j=2:2:12
+             BL(j)=sum((fGauss(2,:)+fVectGauss2).*GaussValues(j,:))+sum([dphiy(1/6,1/6,j),dphiy(2/3,1/6,j),dphiy(1/6,2/3,j)].*hVectGauss);
+         end
         b(nodes) = b(nodes) + 1/6*det(ARefTri)*BL;
         
         for i=1:length(Dirichlet)

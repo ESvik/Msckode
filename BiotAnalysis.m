@@ -57,7 +57,7 @@ tau=10^(-1);
 T=0.1;
 
 %% Problem
-for kappa = [10^(-16),10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)]
+for kappa = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)]
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
@@ -133,7 +133,7 @@ plot(Analysis(1:21,1),Analysis(1:21,2))
 hold on
 plot(Analysis(22,1),Analysis(22,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
-plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+%plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 
 % subplot(3,1,1)
 % trisurf(Elements,X,Y,u(1:2:2*NN-1))
