@@ -53,19 +53,15 @@ DirichletValue=0;
 
 %% Time
 t_0=0;
-tau=10^(-1);
-T=0.1;
+for tau=[10^(1),10^(0),10^(-1),10^(-2),10^(-3)];
+T=t_0+tau;
 
 %% Problem
-kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
-Analysis=zeros(22,12);
-for index=1:6
-kappa = kappavector(index);
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
 pexact = @(x,y,t) pressurescale*t.*x.*y.*(x-1).*(y-1);
-lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-10);
+lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^9; alpha=1; kappa=10^(-10);
 %lambda = 1; mu=1; M=1; alpha=1; kappa=10^(0);
 u_0=zeros(2*(2*sqrt(NN)-1)^2,1);
 u0=uexact(CoordinatesP2(:,1),CoordinatesP2(:,2),t_0);
@@ -80,10 +76,11 @@ f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescal
 %% Mathematical optima
 A_delta=(2/M+2*tau*kappa+2*alpha^2/(2*mu+lambda));
 B_delta=(alpha^2/(2*mu+lambda));
-delta_opt=A_delta/(2*B_delta);
+delta_opt=min(A_delta/(2*B_delta),2);
 
 
 %% Solver
+Analysis=zeros(22,2);
 counter=1;
 for delta = [1.6:0.1:3.6,delta_opt]
     delta
@@ -128,15 +125,14 @@ while t<T+tau
     end
     t=t+tau;
 end
-Analysis(counter,2*index-1)=delta;
-Analysis(counter,2*index)=iterations;
+Analysis(counter,:)=[delta,iterations];
 counter=counter+1;
 end
-plot(Analysis(1:21,2*index-1),Analysis(1:21,2*index))
+plot(Analysis(1:21,1),Analysis(1:21,2))
 hold on
-plot(Analysis(22,2*index-1),Analysis(22,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+plot(Analysis(22,1),Analysis(22,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
-%plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 
 % subplot(3,1,1)
 % trisurf(Elements,X,Y,u(1:2:2*NN-1))
