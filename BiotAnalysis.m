@@ -1,7 +1,7 @@
 %% Biot Analysis
 %% MESH
 x_min=0; x_max=1; y_min=0; y_max=1;
-h=0.1;
+h=1/8;
 [x,y]=meshgrid(x_min:h:x_max,y_min:h:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
 DT=delaunayTriangulation(X,Y);
@@ -58,7 +58,7 @@ T=0.1;
 
 %% Problem
 kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
-Analysis=zeros(22,12);
+Analysis=zeros(40,12);
 for index=1:6
 kappa = kappavector(index);
 %pressurescale=1/kappa*10^(-4);
@@ -85,9 +85,9 @@ delta_opt=A_delta/(2*B_delta);
 
 %% Solver
 counter=1;
-for delta = [1.6:0.1:3.6,delta_opt]
+for delta = [0.7:0.05:2.6,delta_opt]
     delta
-    L=alpha^2/((mu+lambda)*delta);
+    L=alpha^2/((2*mu+lambda)*delta);
     t=t_0+tau;
     f_10=@(x,y) f_1(x,y,t);
     f_20=@(x,y) tau*f_2(x,y,t);
@@ -132,9 +132,9 @@ Analysis(counter,2*index-1)=delta;
 Analysis(counter,2*index)=iterations;
 counter=counter+1;
 end
-plot(Analysis(1:21,2*index-1),Analysis(1:21,2*index))
+plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
 hold on
-plot(Analysis(22,2*index-1),Analysis(22,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
 %plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 
