@@ -56,16 +56,15 @@ tau=10^(-1);
 T=0.1;
 
 %% Problem
-Mvector=100*[10^(7),10^(8),10^(9),10^(10),10^(11),10^(12)];
+kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
 Analysis=zeros(40,12);
 for index=1:6
-M = Mvector(index);
+kappa = kappavector(index);
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
 pexact = @(x,y,t) pressurescale*t.*x.*y.*(x-1).*(y-1);
-  alpha=1; kappa=10^(-12) ; lambda = 27.778*10^(9); mu=41.667*10^(9); %M=100*10^9;
-
+lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-10);
 %lambda = 1; mu=1; M=1; alpha=1; kappa=10^(0);
 u_0=zeros(2*(2*sqrt(NN)-1)^2,1);
 u0=uexact(CoordinatesP2(:,1),CoordinatesP2(:,2),t_0);

@@ -1,7 +1,7 @@
 %% Biot convergence optimization analysis on Mandel's problem
 %% MESH
 x_min=0; x_max=100; y_min=0; y_max=10;
-dx=2.5; dy=0.25;
+dx=2.5; dy=2.5;
 Nx=(x_max-x_min)/dx+1; Ny=(y_max-y_min)/dy+1;
 [x,y]=meshgrid(x_min:dx:x_max,y_min:dy:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
@@ -87,7 +87,7 @@ f_1=@(x,y,t) [0;0];
 f_2=@(x,y,t) 0;
 
 kappavector=[10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
-Analysis=zeros(21,12);
+Analysis=zeros(17,12);
 for index=1:6;
     kappa = kappavector(index);
 cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
@@ -109,7 +109,7 @@ delta_opt=A_delta/(2*B_delta);
 
 %% Solver
 counter=1;
-for  delta = [0.7:0.1:2.6,delta_opt]
+for  delta = [0.7:0.1:2.2,delta_opt]
     delta
 L=alpha^2/((mu+lambda)*delta);
 t=t_0;
@@ -157,7 +157,7 @@ Analysis(counter,2*index-1)=delta;
 Analysis(counter,2*index)=iterations;
 counter=counter+1;
 end
-plot(Analysis(1:20,2*index-1),Analysis(1:20,2*index))
+plot(Analysis(1:16,2*index-1),Analysis(1:16,2*index))
 hold on
-plot(Analysis(21,2*index-1),Analysis(21,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+plot(Analysis(17,2*index-1),Analysis(17,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
