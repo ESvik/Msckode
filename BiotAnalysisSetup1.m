@@ -84,7 +84,6 @@ delta_opt=A_delta/(2*B_delta);
 
 
 %% Solver
-Analysis=zeros(22,2);
 counter=1;
 for  delta = [0.7:0.05:2.6,delta_opt]
     delta

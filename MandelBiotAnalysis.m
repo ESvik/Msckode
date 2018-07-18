@@ -1,7 +1,7 @@
 %% Biot convergence optimization analysis on Mandel's problem
 %% MESH
 x_min=0; x_max=100; y_min=0; y_max=10;
-dx=2.5; dy=2.5;
+dx=2.5; dy=0.25;
 Nx=(x_max-x_min)/dx+1; Ny=(y_max-y_min)/dy+1;
 [x,y]=meshgrid(x_min:dx:x_max,y_min:dy:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
@@ -85,7 +85,11 @@ u_0=zeros(2*(2*Nx-1)*(2*Ny-1),1);
 p_0=zeros(NN,1);
 f_1=@(x,y,t) [0;0];
 f_2=@(x,y,t) 0;
-for kappa=[10^(-10),10^(-12),10^(-14),10^(-16)];
+
+kappavector=[10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
+Analysis=zeros(21,12);
+for index=1:6;
+    kappa = kappavector(index);
 cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
 
 %% Analytical solution
@@ -104,9 +108,9 @@ B_delta=(alpha^2/(2*mu+lambda));
 delta_opt=A_delta/(2*B_delta);
 
 %% Solver
-Analysis=zeros(6,2);
 counter=1;
-for delta=[1:0.5:3,delta_opt];
+for  delta = [0.7:0.1:2.6,delta_opt]
+    delta
 L=alpha^2/((mu+lambda)*delta);
 t=t_0;
 Dirichletu(10/dy+1+(100/dx+1)+1:10/dy+1+2*(100/dx+1),2)=uyAnalytic(10,t);
@@ -149,10 +153,11 @@ while t<T+tau
     end
     t=t+tau;
 end
-Analysis(counter,:)=[delta,iterations];
+Analysis(counter,2*index-1)=delta;
+Analysis(counter,2*index)=iterations;
 counter=counter+1;
 end
-plot(Analysis(1:5,1),Analysis(1:5,2)/2)
+plot(Analysis(1:20,2*index-1),Analysis(1:20,2*index))
 hold on
-plot(Analysis(6,1),Analysis(6,2)/2,'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+plot(Analysis(21,2*index-1),Analysis(21,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
