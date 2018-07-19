@@ -1,7 +1,7 @@
 %% Biot convergence optimization analysis on Mandel's problem
 %% MESH
 x_min=0; x_max=100; y_min=0; y_max=10;
-dx=2.5; dy=2.5;
+dx=5; dy=0.5;
 Nx=(x_max-x_min)/dx+1; Ny=(y_max-y_min)/dy+1;
 [x,y]=meshgrid(x_min:dx:x_max,y_min:dy:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
