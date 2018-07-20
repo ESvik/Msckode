@@ -1,6 +1,6 @@
 %% Edge numbering
 
-function [Elements,Coordinates] = ElementsPlusEdgesLshape(Elements,Coordinates,NN)
+function [Elements,Coordinates] = ElementsPlusEdges(Elements,Coordinates,NN)
 
 i=Elements(:,1);
 j=Elements(:,2);
