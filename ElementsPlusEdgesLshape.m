@@ -1,6 +1,6 @@
 %% Edge numbering
 
-function [Elements,Coordinates] = ElementsPlusEdgesLshape(Elements,Coordinates,NN)
+function [Elements,Coordinates] = ElementsPlusEdgesLshape(Elements,Coordinates,NN,NNnew,x_max,h)
 
 i=Elements(:,1);
 j=Elements(:,2);
@@ -20,7 +20,7 @@ for i =1:length(Elements(:,1))
     NewElements(i,:)=[Elements(i,1),Elements(i,2),Elements(i,3),A(Elements(i,1),Elements(i,2)),A(Elements(i,1),Elements(i,3)),A(Elements(i,2),Elements(i,3))];
 end
 Elements=NewElements;
-NewCoordinates=zeros((2*sqrt(NN)-1)^2,2);
+NewCoordinates=zeros((2*sqrt(NNnew)-1)^2-(x_max/h)^2,2);
 NewCoordinates(1:length(Coordinates),:)=Coordinates;
 for i = 1:length(Elements(:,1))
     Nodes=Elements(i,:);

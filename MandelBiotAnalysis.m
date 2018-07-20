@@ -1,7 +1,7 @@
 %% Biot convergence optimization analysis on Mandel's problem
 %% MESH
 x_min=0; x_max=100; y_min=0; y_max=10;
-dx=5; dy=0.5;
+dx=2.5; dy=2.5;
 Nx=(x_max-x_min)/dx+1; Ny=(y_max-y_min)/dy+1;
 [x,y]=meshgrid(x_min:dx:x_max,y_min:dy:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
@@ -87,9 +87,10 @@ f_1=@(x,y,t) [0;0];
 f_2=@(x,y,t) 0;
 
 kappavector=[10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
+kappa = kappavector(3);
 Analysis=zeros(17,12);
-for index=1:6;
-    kappa = kappavector(index);
+% for index=1:6;
+%     kappa = kappavector(index);
 cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
 
 %% Analytical solution
@@ -100,7 +101,7 @@ cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
 %% Time
 t_0=0;
 tau=10^(0);
-T=10^(1)*0.5;
+T=4*tau;
 
 %% Mathematical optima
 A_delta=(2/M+2*tau*kappa+2*alpha^2/(2*mu+lambda));
@@ -109,9 +110,9 @@ delta_opt=A_delta/(2*B_delta);
 
 %% Solver
 counter=1;
-for  delta = [0.7:0.1:2.2,delta_opt]
-    delta
-L=alpha^2/((mu+lambda)*delta);
+%for  delta = [0.7:0.1:2.2,delta_opt]
+    delta=2
+L=alpha^2/((2*mu+lambda)*delta);
 t=t_0;
 Dirichletu(10/dy+1+(100/dx+1)+1:10/dy+1+2*(100/dx+1),2)=uyAnalytic(10,t);
 f_10=@(x,y) f_1(x,y,t);
@@ -156,8 +157,14 @@ end
 Analysis(counter,2*index-1)=delta;
 Analysis(counter,2*index)=iterations;
 counter=counter+1;
-end
-plot(Analysis(1:16,2*index-1),Analysis(1:16,2*index))
-hold on
-plot(Analysis(17,2*index-1),Analysis(17,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-end
+%end
+% plot(Analysis(1:16,2*index-1),Analysis(1:16,2*index))
+% hold on
+% plot(Analysis(17,2*index-1),Analysis(17,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+% %end
+subplot(3,1,1)
+trisurf(Elements,X,Y,u(1:2:2*NN-1))
+subplot(3,1,2)
+trisurf(Elements,X,Y,u(2:2:2*NN))
+subplot(3,1,3)
+trisurf(Elements,X,Y,p)
