@@ -1,7 +1,8 @@
 %% Linear Strain equation solver  C(e(u):e(v))+B(nabla*u,nabla*v)=(f,v) +(h,nabla * v)   in 2D domain with 2D Range using P2 elements.
-function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Neumann,g,f,h,fVector,firstrun,Apre,Coefficients,GaussValues)
+function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Neumann,g,f,h,fVector,firstrun,Apre,Coefficients,GaussValues,CoordinatesP2)
     NN=length(Coordinates(:,1));
-    b=zeros(2*(2*sqrt(NN)-1)^2,1);
+    NNP2=length(CoordinatesP2(:,1));
+    b=zeros(2*NNP2,1);
     number_of_elements=length(Elements(:,1));
     
 %     %Basis and its evaluation points
@@ -22,7 +23,7 @@ function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Ne
     %Assembly
 
     if firstrun == 1
-        A=sparse(2*(2*sqrt(NN)-1)^2,2*(2*sqrt(NN)-1)^2);
+        A=sparse(2*NNP2,2*NNP2);
         for k = 1:number_of_elements
             nodes = Elements(k,:);
             originalnodes=[nodes(1),nodes(2),nodes(3)];
