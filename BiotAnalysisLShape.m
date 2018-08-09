@@ -168,12 +168,12 @@ DirichletTop=find(Coordinates(:,2)==y_max);
 DirichletLeft=find(Coordinates(:,1)==x_min);
 DirichletDown=find(Coordinates(:,2)==y_min);
 DirichletRight=find(Coordinates(:,1)==x_max);
-DirichletTopP2=find(CoordinatesP2(:,2)==y_max);
+%DirichletTopP2=find(CoordinatesP2(:,2)==y_max);
 DirichletLeftP2=find(CoordinatesP2(:,1)==x_min);
 DirichletDownP2=find(CoordinatesP2(:,2)==y_min);
 DirichletRightP2=find(CoordinatesP2(:,1)==x_max);
 
-Dirichletupre=[DirichletDownP2;DirichletRightP2;DirichletInnerEdgeUpP2;DirichletInnerEdgeRightP2;DirichletTopP2;DirichletLeftP2];
+Dirichletupre=[DirichletDownP2;DirichletRightP2;DirichletInnerEdgeUpP2;DirichletInnerEdgeRightP2;DirichletLeftP2];
 Dirichletupre=[2*Dirichletupre;2*Dirichletupre-1];
 Dirichletu=zeros(length(Dirichletupre),2);
 Dirichletu(:,1)=Dirichletupre;
@@ -208,8 +208,9 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
-A_delta=(2/M+2*tau*kappa+2*alpha^2/(2*mu+lambda));
-B_delta=(alpha^2/(2*mu+lambda));
+beta = (2*mu + lambda);
+A_delta=(2/M+2*tau*kappa+2*alpha^2/(beta));
+B_delta=(alpha^2/(beta));
 delta_opt=A_delta/(2*B_delta);
 
 
@@ -267,9 +268,18 @@ plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
 hold on
 plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
+<<<<<<< HEAD
 %subplot(3,1,1)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
 %subplot(3,1,2)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
 %subplot(3,1,3)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
+=======
+% subplot(3,1,1)
+% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
+% subplot(3,1,2)
+% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
+% subplot(3,1,3)
+% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
+>>>>>>> 1a42355b9559b7999af704fff86e21025eadb68f

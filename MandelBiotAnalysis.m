@@ -49,10 +49,11 @@ DirichletValue = 0;
 % Neumannp(:,1)=[find(Coordinates(:,1)==x_min);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
 % Neumannp(:,2)=0;
 %Boundary for mechanics
-Dirichletu = zeros(2*(100/dx+1)+10/dy+1,2);
-Dirichletu(:,1)=[2*find(Coordinates(:,1)==x_min)-ones(length(find(Coordinates(:,1)==x_min)),1);2*find(Coordinates(:,2)==y_min);2*find(Coordinates(:,2)==y_max)];
-Dirichletu(1:(10/dy+1),2)=0;
-Dirichletu(10/dy+2:10/dy+1+(100/dx+1),2)=0;
+NxP2=length(find(CoordinatesP2(:,2)==y_max)); NyP2=length(find(CoordinatesP2(:,1)==x_min));
+Dirichletu = zeros(2*NxP2+NyP2,2);
+Dirichletu(:,1)=[2*find(CoordinatesP2(:,2)==y_max);2*find(CoordinatesP2(:,1)==x_min)-ones(length(find(CoordinatesP2(:,1)==x_min)),1);2*find(CoordinatesP2(:,2)==y_min)];
+% Dirichletu(1:(10/dy+1),2)=0;
+% Dirichletu(10/dy+2:10/dy+1+(100/dx+1),2)=0;
 
 
 
@@ -61,8 +62,7 @@ a = 100;
 b = 10; 
 E =  5.94*10^9;% [Pa]
 v = 0.2;% 
-cf=3.03e-10;% [1/Pa]
-alpha=1.0;% 
+alpha=1;% 
 B=0.833333; %Skempton coefficient 
 vu= 0.44; %Undrained Poison's ratio
 M=1.65*10^10;% Biot Modulus [Pa]
@@ -86,8 +86,8 @@ p_0=zeros(NN,1);
 f_1=@(x,y,t) [0;0];
 f_2=@(x,y,t) 0;
 
-kappavector=[10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
-kappa = kappavector(3);
+for kappavector=[10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
+kappa = kappavector;
 Analysis=zeros(17,12);
 % for index=1:6;
 %     kappa = kappavector(index);
@@ -100,25 +100,25 @@ cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
 
 %% Time
 t_0=0;
-tau=10^(0);
-T=4*tau;
+tau=10^(4);
+T=10*tau;
 
 %% Mathematical optima
 A_delta=(2/M+2*tau*kappa+2*alpha^2/(2*mu+lambda));
 B_delta=(alpha^2/(2*mu+lambda));
-delta_opt=A_delta/(2*B_delta);
+delta_opt=min(A_delta/(2*B_delta),2);
 
 %% Solver
 counter=1;
-%for  delta = [0.7:0.1:2.2,delta_opt]
-    delta=2
+for  delta = [0.7:0.1:2.2,delta_opt]
+    delta
 L=alpha^2/((2*mu+lambda)*delta);
 t=t_0;
-Dirichletu(10/dy+1+(100/dx+1)+1:10/dy+1+2*(100/dx+1),2)=uyAnalytic(10,t);
+Dirichletu(1:NxP2,2)=uyAnalytic(10,t);
 f_10=@(x,y) f_1(x,y,t);
 f_20=@(x,y) tau*f_2(x,y,t);
 [p,Ap] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,zeros(2*(2*Nx-1)*(2*Ny-1),1),CoordinatesP2,ElementsP2,1/M*p_0+L*p_0,1,0,Coefficients,GaussValues);
-[u,Au] = FEMLinStrain2DvectorialP2Mandel(Coordinates,ElementsP2,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(4*NN,1),1,0,CoefficientsP2,GaussValuesP2,Nx,Ny);
+[u,Au] = FEMLinStrain2DvectorialP2(Coordinates,ElementsP2,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(4*NN,1),1,0,CoefficientsP2,GaussValuesP2,CoordinatesP2);
 u_old = u_0;
 p_old = p_0;
 errorp=norm(p-p_old,inf)/norm(p,inf);
@@ -128,7 +128,7 @@ while errorp>10^(-6) || erroru>10^(-6)
     u_prev=u;
     p_prev=p;
     [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
-    [u,~] = FEMLinStrain2DvectorialP2Mandel(Coordinates,ElementsP2,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(4*NN,1),0,Au,CoefficientsP2,GaussValuesP2,Nx,Ny);
+    [u,~] = FEMLinStrain2DvectorialP2(Coordinates,ElementsP2,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(4*NN,1),0,Au,CoefficientsP2,GaussValuesP2,CoordinatesP2);
     errorp=norm(p-p_prev,inf)/norm(p,inf)
     erroru=norm(u-u_prev,inf)/norm(u,inf)
     %error = sqrt(errorp^2+erroru^2)
@@ -136,7 +136,7 @@ while errorp>10^(-6) || erroru>10^(-6)
 end
 t=t+tau;
 while t<T+tau
-    Dirichletu(10/dy+1+(100/dx+1)+1:10/dy+1+2*(100/dx+1),2)=uyAnalytic(10,t);
+    Dirichletu(1:NxP2,2)=uyAnalytic(10,t);
     u_old = u;
     p_old = p;
     f_1t = @(x,y) f_1(x,y,t);
@@ -146,9 +146,9 @@ while t<T+tau
         u_prev=u;
         p_prev=p;
         [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
-        [u,~] = FEMLinStrain2DvectorialP2Mandel(Coordinates,ElementsP2,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(4*NN,1),0,Au,CoefficientsP2,GaussValuesP2,Nx,Ny);
-        errorp = norm(p-p_prev,inf)/norm(p,inf);
-        erroru = norm(u-u_prev,inf)/norm(u,inf);
+        [u,~] = FEMLinStrain2DvectorialP2(Coordinates,ElementsP2,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(4*NN,1),0,Au,CoefficientsP2,GaussValuesP2,CoordinatesP2);
+        errorp = norm(p-p_prev,inf)/norm(p,inf)
+        erroru = norm(u-u_prev,inf)/norm(u,inf)
         %error = sqrt(errorp^2+erroru^2)
         iterations=iterations+1;
     end
@@ -157,14 +157,14 @@ end
 Analysis(counter,2*index-1)=delta;
 Analysis(counter,2*index)=iterations;
 counter=counter+1;
-%end
-% plot(Analysis(1:16,2*index-1),Analysis(1:16,2*index))
-% hold on
-% plot(Analysis(17,2*index-1),Analysis(17,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-% %end
-subplot(3,1,1)
-trisurf(Elements,X,Y,u(1:2:2*NN-1))
-subplot(3,1,2)
-trisurf(Elements,X,Y,u(2:2:2*NN))
-subplot(3,1,3)
-trisurf(Elements,X,Y,p)
+end
+plot(Analysis(1:16,2*index-1),Analysis(1:16,2*index))
+hold on
+plot(Analysis(17,2*index-1),Analysis(17,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+end
+% subplot(3,1,1)
+% trisurf(Elements,X,Y,u(1:2:2*NN-1))
+% subplot(3,1,2)
+% trisurf(Elements,X,Y,u(2:2:2*NN))
+% subplot(3,1,3)
+% trisurf(Elements,X,Y,p)
