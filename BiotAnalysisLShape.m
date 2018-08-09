@@ -183,19 +183,19 @@ DirichletValue=0;
 
 %% Time
 t_0=0;
-tau=10^(-1);
-T=0.1;
+tau=0.5*10^(-1);
+T=tau;
 
 %% Problem
 kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
 Analysis=zeros(40,12);
-%for index=1:6
-kappa = kappavector(6);
+for index=1:6
+kappa = kappavector(index);
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
 pexact = @(x,y,t) pressurescale*t.*x.*y.*(x-1).*(y-1);
-lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-10);
+lambda = 0.5*27.778*10^(9); mu=0.5*41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-10);
 %lambda = 1; mu=1; M=1; alpha=1; kappa=10^(0);
 u_0=zeros(2*length(CoordinatesP2(:,1)),1);
 u0=uexact(CoordinatesP2(:,1),CoordinatesP2(:,2),t_0);
@@ -215,8 +215,8 @@ delta_opt=A_delta/(2*B_delta);
 
 %% Solver
 counter=1;
-%for  delta = [0.7:0.05:2.6,delta_opt]
-    delta=2;
+for  delta = [0.7:0.05:2.6,delta_opt]
+    delta
     %L=alpha^2/((mu+lambda)*delta);
     L=alpha^2/((2*mu+lambda)*delta);
     t=t_0+tau;
@@ -259,17 +259,17 @@ while t<T+tau
     end
     t=t+tau;
 end
-% Analysis(counter,2*index-1)=delta;
-% Analysis(counter,2*index)=iterations;
-% counter=counter+1;
-% end
-% plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
-% hold on
-% plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-% end
-subplot(3,1,1)
-trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
-subplot(3,1,2)
-trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
-subplot(3,1,3)
-trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
+Analysis(counter,2*index-1)=delta;
+Analysis(counter,2*index)=iterations;
+counter=counter+1;
+end
+plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
+hold on
+plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+end
+%subplot(3,1,1)
+%trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
+%subplot(3,1,2)
+%trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
+%subplot(3,1,3)
+%trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
