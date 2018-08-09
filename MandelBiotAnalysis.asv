@@ -86,11 +86,11 @@ p_0=zeros(NN,1);
 f_1=@(x,y,t) [0;0];
 f_2=@(x,y,t) 0;
 Analysis=zeros(17,12);
-kappavector=[10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
+for kappavector=[10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
+kappa = kappavector;
 
-
-for index=1:6;
-   kappa = kappavector(index);
+% for index=1:6;
+%     kappa = kappavector(index);
 cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
 
 %% Analytical solution
