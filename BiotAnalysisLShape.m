@@ -168,12 +168,12 @@ DirichletTop=find(Coordinates(:,2)==y_max);
 DirichletLeft=find(Coordinates(:,1)==x_min);
 DirichletDown=find(Coordinates(:,2)==y_min);
 DirichletRight=find(Coordinates(:,1)==x_max);
-DirichletTopP2=find(CoordinatesP2(:,2)==y_max);
+%DirichletTopP2=find(CoordinatesP2(:,2)==y_max);
 DirichletLeftP2=find(CoordinatesP2(:,1)==x_min);
 DirichletDownP2=find(CoordinatesP2(:,2)==y_min);
 DirichletRightP2=find(CoordinatesP2(:,1)==x_max);
 
-Dirichletupre=[DirichletDownP2;DirichletRightP2;DirichletInnerEdgeUpP2;DirichletInnerEdgeRightP2;DirichletTopP2;DirichletLeftP2];
+Dirichletupre=[DirichletDownP2;DirichletRightP2;DirichletInnerEdgeUpP2;DirichletInnerEdgeRightP2;DirichletLeftP2];
 Dirichletupre=[2*Dirichletupre;2*Dirichletupre-1];
 Dirichletu=zeros(length(Dirichletupre),2);
 Dirichletu(:,1)=Dirichletupre;
@@ -189,8 +189,8 @@ T=0.1;
 %% Problem
 kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
 Analysis=zeros(40,12);
-%for index=1:6
-kappa = kappavector(6);
+for index=1:6
+kappa = kappavector(index);
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
@@ -208,15 +208,16 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
-A_delta=(2/M+2*tau*kappa+2*alpha^2/(2*mu+lambda));
-B_delta=(alpha^2/(2*mu+lambda));
+beta = (2*mu + lambda);
+A_delta=(2/M+2*tau*kappa+2*alpha^2/(beta));
+B_delta=(alpha^2/(beta));
 delta_opt=A_delta/(2*B_delta);
 
 
 %% Solver
 counter=1;
-%for  delta = [0.7:0.05:2.6,delta_opt]
-    delta=2;
+for  delta = [0.7:0.05:2.6,delta_opt]
+    delta
     %L=alpha^2/((mu+lambda)*delta);
     L=alpha^2/((2*mu+lambda)*delta);
     t=t_0+tau;
@@ -259,17 +260,17 @@ while t<T+tau
     end
     t=t+tau;
 end
-% Analysis(counter,2*index-1)=delta;
-% Analysis(counter,2*index)=iterations;
-% counter=counter+1;
-% end
-% plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
-% hold on
-% plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-% end
-subplot(3,1,1)
-trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
-subplot(3,1,2)
-trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
-subplot(3,1,3)
-trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
+Analysis(counter,2*index-1)=delta;
+Analysis(counter,2*index)=iterations;
+counter=counter+1;
+end
+plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
+hold on
+plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+end
+% subplot(3,1,1)
+% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
+% subplot(3,1,2)
+% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
+% subplot(3,1,3)
+% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)

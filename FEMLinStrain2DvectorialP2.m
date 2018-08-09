@@ -119,11 +119,7 @@ function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Ne
             end
             b(nodes) = b(nodes) + 1/6*det(ARefTri)*BL;
     
-            %Boundary
-            for i=1:length(Dirichlet)
-                A(Dirichlet(i,1),:)=0; A(Dirichlet(i,1),Dirichlet(i,1))=1;
-                b(Dirichlet(i,1))=Dirichlet(i,2);
-            end
+            
     
             %    for j = 1:size(Neumann,1)
             %         nodes = Neumann(j,:);
@@ -131,6 +127,11 @@ function [u,A] = FEMLinStrain2DvectorialP2(Coordinates,Elements,C,B,Dirichlet,Ne
             %         E = vertices(2,:) - vertices(1,:);
             %         b(nodes) = b(nodes) + norm(E)/2 * g(sum(vertices)/2);
             %   end
+        end
+        %Boundary
+        for i=1:length(Dirichlet)
+               A(Dirichlet(i,1),:)=0; A(Dirichlet(i,1),Dirichlet(i,1))=1;
+               b(Dirichlet(i,1))=Dirichlet(i,2);
         end
     end
     
