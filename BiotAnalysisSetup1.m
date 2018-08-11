@@ -77,7 +77,8 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
-beta=1.2*(2*mu+lambda);
+Kdr=1.2*mu+lambda;
+beta=1.2*(Kdr);
 A_delta=(2/M+2*tau*kappa+2*alpha^2/beta);
 B_delta=(alpha^2/beta);
 delta_opt=min(A_delta/(2*B_delta),2);
@@ -89,7 +90,7 @@ counter=1;
 for  delta = [0.7:0.05:2,delta_opt]
     delta
     %L=alpha^2/((mu+lambda)*delta);
-    L=alpha^2/((2*mu+lambda)*delta);
+    L=alpha^2/((Kdr)*delta);
     t=t_0+tau;
     f_10=@(x,y) f_1(x,y,t);
     f_20=@(x,y) tau*f_2(x,y,t);

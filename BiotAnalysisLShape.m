@@ -268,18 +268,11 @@ plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
 hold on
 plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
-<<<<<<< HEAD
+
 %subplot(3,1,1)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
 %subplot(3,1,2)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
 %subplot(3,1,3)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
-=======
-% subplot(3,1,1)
-% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
-% subplot(3,1,2)
-% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
-% subplot(3,1,3)
-% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
->>>>>>> 1a42355b9559b7999af704fff86e21025eadb68f
+
