@@ -1,4 +1,4 @@
-%% Biot Analysis
+%% Biot Analysis Random Initial Values
 %% MESH
 x_min=0; x_max=1; y_min=0; y_max=1;
 h=1/8;
@@ -41,12 +41,8 @@ for i = 1:12
     GaussValuesP2(i,2) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*2/3 + CoefficientsP2(i,3)*1/6+CoefficientsP2(i,4)*(2/3)^2+CoefficientsP2(i,5)*1/6^2+CoefficientsP2(i,6)*1/6*2/3);
     GaussValuesP2(i,3) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*2/3+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*(2/3)^2+CoefficientsP2(i,6)*1/6*2/3);
 end
-Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
-Dirichletu = zeros(6*(2/h+1),2);
-Dirichletu(:,1)=[2*find(CoordinatesP2(:,1)==x_min);2*find(CoordinatesP2(:,1)==x_min)-ones(length(find(CoordinatesP2(:,1)==x_min)),1);2*find(CoordinatesP2(:,1)==x_max);2*find(CoordinatesP2(:,1)==x_max)-ones(length(find(CoordinatesP2(:,1)==x_max)),1);2*find(CoordinatesP2(:,2)==y_min);2*find(CoordinatesP2(:,2)==y_min)-ones(length(find(CoordinatesP2(:,2)==y_min)),1)];
-Dirichletu(1:2*(2/h+1),2)=0;
-Dirichletu(2*(2/h+1)+1:4*(2/h+1),2)=0;
-Dirichletu(4*(2/h+1)+1:6*(2/h+1),2)=0;
+Dirichletp=[];
+Dirichletu = [];
 
 DirichletValue=0;
 
@@ -56,29 +52,25 @@ tau=10^(-1);
 T=0.1;
 
 %% Problem
+pressurescale = 1;
+u_0=rand(2*(2*sqrt(NN)-1)^2,1);
+p_0=pressurescale*rand(NN,1);
 kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
 Analysis=zeros(28,12);
 for index=1:6
 kappa = kappavector(index);
 %pressurescale=1/kappa*10^(-4);
-pressurescale = 10^11;
-uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
-pexact = @(x,y,t) pressurescale*t.*x.*y.*(x-1).*(y-1);
+
 lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-10);
 %lambda = 1; mu=1; M=1; alpha=1; kappa=10^(0);
-u_0=zeros(2*(2*sqrt(NN)-1)^2,1);
-u0=uexact(CoordinatesP2(:,1),CoordinatesP2(:,2),t_0);
-u_0(1:2:2*(2*sqrt(NN)-1)^2-1)=u0(:,1);
-u_0(2:2:2*(2*sqrt(NN)-1)^2)=u0(:,2);
-p_0=pexact(X,Y,t_0);
 %f_1=@(x,y,t) [0;0];
 %f_2=@(x,y,t) 0;
-f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*t*x.*(x-1)+(alpha*t*y.*(y-1).*(2*x-1))*pressurescale; -mu*2*t*y.*(y-1)+(-mu-lambda)*t*(2*x-1).*(2*y-1)+(-2*mu-lambda)*2*t*x.*(x-1)+(alpha*t*x.*(x-1).*(2*y-1))*pressurescale];
-f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
+f_1=@(x,y,t) [0;0];
+f_2=@(x,y,t) 0;
+
 
 %% Mathematical optima
-Kdr = 1.1*mu+lambda;
-beta=(Kdr);
+beta=(2*mu+lambda);
 A_delta=(2/M+2*tau*kappa+2*alpha^2/beta);
 B_delta=(alpha^2/beta);
 delta_opt=min(A_delta/(2*B_delta),2);
@@ -87,10 +79,10 @@ delta_opt=min(A_delta/(2*B_delta),2);
 
 %% Solver
 counter=1;
-for  delta = [1:0.05:2.3,delta_opt]
+for  delta = [1:0.05:2,delta_opt]
     delta
     %L=alpha^2/((mu+lambda)*delta);
-    L=alpha^2/((Kdr)*delta);
+    L=alpha^2/((mu+lambda)*delta);
     t=t_0+tau;
     f_10=@(x,y) f_1(x,y,t);
     f_20=@(x,y) tau*f_2(x,y,t);

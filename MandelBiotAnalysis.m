@@ -89,9 +89,10 @@ Analysis=zeros(17,12);
 kappavector=[10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
 
 
-for index=1:6;
-   kappa = kappavector(index);
+%for index=1:6;
+   kappa = kappavector(3);
 cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
+%cf = (2*kappa*(B^2)*mu*(1-v)*(1+vu)^2) /(9*visc*(1-vu)*(vu-v));
 
 %% Analytical solution
 
@@ -110,8 +111,8 @@ delta_opt=min(A_delta/(2*B_delta),2);
 
 %% Solver
 counter=1;
-for  delta = [0.7:0.1:2.2,delta_opt]
-    delta
+%for  delta = [0.7:0.1:2.2,delta_opt]
+    delta=1;
 L=alpha^2/((2*mu+lambda)*delta);
 t=t_0;
 Dirichletu(1:NxP2,2)=uyAnalytic(10,t);
@@ -157,14 +158,14 @@ end
 Analysis(counter,2*index-1)=delta;
 Analysis(counter,2*index)=iterations;
 counter=counter+1;
-end
-plot(Analysis(1:16,2*index-1),Analysis(1:16,2*index))
-hold on
-plot(Analysis(17,2*index-1),Analysis(17,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-end
-% subplot(3,1,1)
-% trisurf(Elements,X,Y,u(1:2:2*NN-1))
-% subplot(3,1,2)
-% trisurf(Elements,X,Y,u(2:2:2*NN))
-% subplot(3,1,3)
-% trisurf(Elements,X,Y,p)
+% end
+% plot(Analysis(1:16,2*index-1),Analysis(1:16,2*index))
+% hold on
+% plot(Analysis(17,2*index-1),Analysis(17,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+% end
+subplot(3,1,1)
+trisurf(Elements,X,Y,u(1:2:2*NN-1))
+subplot(3,1,2)
+trisurf(Elements,X,Y,u(2:2:2*NN))
+subplot(3,1,3)
+trisurf(Elements,X,Y,p)
