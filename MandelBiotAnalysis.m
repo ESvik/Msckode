@@ -105,15 +105,23 @@ tau=10^(4);
 T=10*tau;
 
 %% Mathematical optima
-A_delta=(2/M+2*tau*kappa+2*alpha^2/(2*mu+lambda));
-B_delta=(alpha^2/(2*mu+lambda));
+Kdr=mu+lambda;
+beta=1.2*Kdr;
+A_delta=(2/M+2*tau*kappa*0.001+2*alpha^2/(beta));
+B_delta=(alpha^2/(beta));
 delta_opt=min(A_delta/(2*B_delta),2);
 
 %% Solver
 counter=1;
+<<<<<<< HEAD
 %for  delta = [0.7:0.1:2.2,delta_opt]
     delta=1;
 L=alpha^2/((2*mu+lambda)*delta);
+=======
+for  delta = [0.7:0.1:2.2,delta_opt]
+    delta
+L=alpha^2/((Kdr)*delta);
+>>>>>>> eb5031b214c45920f166a797ebe2209d5f3f13a1
 t=t_0;
 Dirichletu(1:NxP2,2)=uyAnalytic(10,t);
 f_10=@(x,y) f_1(x,y,t);

@@ -208,10 +208,11 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
-beta = (2*mu + lambda);
+Kdr=1.1*mu+lambda;
+beta = Kdr;
 A_delta=(2/M+2*tau*kappa+2*alpha^2/(beta));
 B_delta=(alpha^2/(beta));
-delta_opt=A_delta/(2*B_delta);
+delta_opt=min(A_delta/(2*B_delta),2);
 
 
 %% Solver
@@ -219,7 +220,7 @@ counter=1;
 for  delta = [0.7:0.05:2.6,delta_opt]
     delta
     %L=alpha^2/((mu+lambda)*delta);
-    L=alpha^2/((2*mu+lambda)*delta);
+    L=alpha^2/(Kdr*delta);
     t=t_0+tau;
     f_10=@(x,y) f_1(x,y,t);
     f_20=@(x,y) tau*f_2(x,y,t);
@@ -268,18 +269,11 @@ plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
 hold on
 plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
-<<<<<<< HEAD
+
 %subplot(3,1,1)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
 %subplot(3,1,2)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
 %subplot(3,1,3)
 %trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
-=======
-% subplot(3,1,1)
-% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
-% subplot(3,1,2)
-% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
-% subplot(3,1,3)
-% trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
->>>>>>> 1a42355b9559b7999af704fff86e21025eadb68f
+

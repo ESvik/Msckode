@@ -42,12 +42,11 @@ for i = 1:12
     GaussValuesP2(i,3) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*2/3+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*(2/3)^2+CoefficientsP2(i,6)*1/6*2/3);
 end
 Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
-Dirichletu = zeros(8*(2/h+1),2);
-Dirichletu(:,1)=[2*find(CoordinatesP2(:,1)==x_min);2*find(CoordinatesP2(:,1)==x_min)-ones(length(find(CoordinatesP2(:,1)==x_min)),1);2*find(CoordinatesP2(:,1)==x_max);2*find(CoordinatesP2(:,1)==x_max)-ones(length(find(CoordinatesP2(:,1)==x_max)),1);2*find(CoordinatesP2(:,2)==y_min);2*find(CoordinatesP2(:,2)==y_min)-ones(length(find(CoordinatesP2(:,2)==y_min)),1);2*find(CoordinatesP2(:,2)==y_max);2*find(CoordinatesP2(:,2)==y_max)-ones(length(find(CoordinatesP2(:,2)==y_max)),1)];
+Dirichletu = zeros(6*(2/h+1),2);
+Dirichletu(:,1)=[2*find(CoordinatesP2(:,1)==x_min);2*find(CoordinatesP2(:,1)==x_min)-ones(length(find(CoordinatesP2(:,1)==x_min)),1);2*find(CoordinatesP2(:,1)==x_max);2*find(CoordinatesP2(:,1)==x_max)-ones(length(find(CoordinatesP2(:,1)==x_max)),1);2*find(CoordinatesP2(:,2)==y_min);2*find(CoordinatesP2(:,2)==y_min)-ones(length(find(CoordinatesP2(:,2)==y_min)),1)];
 Dirichletu(1:2*(2/h+1),2)=0;
 Dirichletu(2*(2/h+1)+1:4*(2/h+1),2)=0;
 Dirichletu(4*(2/h+1)+1:6*(2/h+1),2)=0;
-Dirichletu(6*(2/h+1)+1:8*(2/h+1),2)=0;
 
 DirichletValue=0;
 
@@ -58,7 +57,7 @@ T=0.1;
 
 %% Problem
 kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
-Analysis=zeros(40,12);
+Analysis=zeros(28,12);
 for index=1:6
 kappa = kappavector(index);
 %pressurescale=1/kappa*10^(-4);
@@ -78,18 +77,22 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
-Kdr=2*mu+lambda;
-beta=Kdr;
-A_delta=(2/M+2*tau*kappa+2*alpha^2/(beta));
-B_delta=(alpha^2/(beta));
+Kdr=1.1*mu+lambda;
+beta=(Kdr);
+A_delta=(2/M+2*tau*kappa+2*alpha^2/beta);
+B_delta=(alpha^2/beta);
 delta_opt=min(A_delta/(2*B_delta),2);
+
 
 
 %% Solver
 counter=1;
-for delta = [0.7:0.05:2.6,delta_opt]
+for  delta = [1:0.05:2.3,delta_opt]
+    iterations=1;
+    for i=1:10
     delta
-    L=alpha^2/(Kdr*delta);
+    %L=alpha^2/((mu+lambda)*delta);
+    L=alpha^2/((Kdr)*delta);
     t=t_0+tau;
     f_10=@(x,y) f_1(x,y,t);
     f_20=@(x,y) tau*f_2(x,y,t);
@@ -99,8 +102,10 @@ for delta = [0.7:0.05:2.6,delta_opt]
     p_old = p_0;
     errorp=norm(p-p_old,inf)/norm(p,inf);
     erroru=norm(u-u_old,inf)/norm(u,inf);
-    iterations=1;
-    while errorp>10^(-8) || erroru>10^(-8)
+    
+    u=rand(size(u));
+    p=rand(size(p));
+    while errorp>10^(-12) || erroru>10^(-12)
         u_prev=u;
         p_prev=p;
         [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
@@ -118,7 +123,9 @@ while t<T+tau
     f_1t = @(x,y) f_1(x,y,t);
     f_2t = @(x,y) tau*f_2(x,y,t);
     errorp = 1; erroru=1;
-    while errorp>10^(-8) || erroru>10^(-8)
+    u=rand(size(u));
+    p=rand(size(p));
+    while errorp>10^(-12) || erroru>10^(-12)
         u_prev=u;
         p_prev=p;
         [p,~] = FEMParabolic2D(Coordinates,Elements,1/M+L,kappa*tau,Dirichletp,DirichletValue,Neumann,g,f_20,-alpha*(u_prev-u_old),CoordinatesP2,ElementsP2,1/M*p_old+L*p_prev,0,Ap,Coefficients,GaussValues);
@@ -130,16 +137,17 @@ while t<T+tau
     end
     t=t+tau;
 end
+    end
+    iterations=iterations/10;
 Analysis(counter,2*index-1)=delta;
 Analysis(counter,2*index)=iterations;
+    
 counter=counter+1;
 end
-plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
+plot(Analysis(1:27,2*index-1),Analysis(1:27,2*index))
 hold on
-plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+plot(Analysis(28,2*index-1),Analysis(28,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
 end
-%plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-
 % subplot(3,1,1)
 % trisurf(Elements,X,Y,u(1:2:2*NN-1))
 % subplot(3,1,2)
