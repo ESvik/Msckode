@@ -105,7 +105,7 @@ tau=10^(4);
 T=5*tau;
 
 %% Mathematical optima
-Kdr=1.7*mu+lambda;
+Kdr=1.35*mu+lambda;
 beta=Kdr;
 A_delta=(2/M+2*tau*kappa*0.000001+2*alpha^2/(beta));
 B_delta=(alpha^2/(beta));
