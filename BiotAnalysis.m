@@ -59,8 +59,8 @@ T=0.1;
 %% Problem
 kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
 Analysis=zeros(40,12);
-for index=1:6
-kappa = kappavector(index);
+%for index=1:6
+kappa = kappavector(6);
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
@@ -87,8 +87,8 @@ delta_opt=min(A_delta/(2*B_delta),2);
 
 %% Solver
 counter=1;
-for delta = [0.7:0.05:2.6,delta_opt]
-    delta
+%for delta = [0.7:0.05:2.6,delta_opt]
+    delta=1.5
     L=alpha^2/(Kdr*delta);
     t=t_0+tau;
     f_10=@(x,y) f_1(x,y,t);
@@ -130,19 +130,21 @@ while t<T+tau
     end
     t=t+tau;
 end
-Analysis(counter,2*index-1)=delta;
-Analysis(counter,2*index)=iterations;
-counter=counter+1;
-end
-plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
-hold on
-plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-end
+% Analysis(counter,2*index-1)=delta;
+% Analysis(counter,2*index)=iterations;
+% counter=counter+1;
+% %end
+% plot(Analysis(1:39,2*index-1),Analysis(1:39,2*index))
+% hold on
+% plot(Analysis(40,2*index-1),Analysis(40,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+%end
 %plot(Analysis(17,1),Analysis(17,2),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-
-% subplot(3,1,1)
-% trisurf(Elements,X,Y,u(1:2:2*NN-1))
-% subplot(3,1,2)
+usq=sqrt(u(1:2:2*NN-1).*u(2:2:2*NN)); 
+subplot(1,2,1)
+title('|u|')
+trisurf(Elements,X,Y,usq,'EdgeColor','none','FaceColor','interp')
+% subplot(3,2,1)
 % trisurf(Elements,X,Y,u(2:2:2*NN))
-% subplot(3,1,3)
-% trisurf(Elements,X,Y,p)
+subplot(1,2,2)
+title('p')
+trisurf(Elements,X,Y,p,'EdgeColor','none','FaceColor','interp')
