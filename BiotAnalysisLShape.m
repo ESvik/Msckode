@@ -208,7 +208,11 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
+<<<<<<< HEAD
 Kdr=1.6*mu+lambda;
+=======
+Kdr=1.4*mu+lambda;
+>>>>>>> 59e7a684c7c0cc901ecaa8c13e11aef07909b4cd
 beta = Kdr;
 A_delta=(2/M+2*tau*kappa+2*alpha^2/(beta));
 B_delta=(alpha^2/(beta));
