@@ -102,12 +102,12 @@ cf = M*kappa*(K+4/3*mu)/(Ku+4/3*mu);
 %% Time
 t_0=0;
 tau=10^(4);
-T=5*tau;
+T=10*tau;
 
 %% Mathematical optima
-Kdr=1.7*mu+lambda;
+Kdr=mu+lambda;
 beta=Kdr;
-A_delta=(2/M+2*tau*kappa*0.000001+2*alpha^2/(beta));
+A_delta=(2/M+2*tau*kappa*0.001+2*alpha^2/(beta));
 B_delta=(alpha^2/(beta));
 delta_opt=min(A_delta/(2*B_delta),2);
 
