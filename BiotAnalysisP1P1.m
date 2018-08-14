@@ -25,12 +25,12 @@ for i = 1:3
     GaussValues(i,3) = 1/6*(Coefficients(i,1) + Coefficients(i,2)*1/6 + Coefficients(i,3)*2/3);
 end
 Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
-Dirichletu = zeros(8*(1/h+1),2);
-Dirichletu(:,1)=[2*find(Coordinates(:,1)==x_min);2*find(Coordinates(:,1)==x_min)-ones(length(find(Coordinates(:,1)==x_min)),1);2*find(Coordinates(:,1)==x_max);2*find(Coordinates(:,1)==x_max)-ones(length(find(Coordinates(:,1)==x_max)),1);2*find(Coordinates(:,2)==y_min);2*find(Coordinates(:,2)==y_min)-ones(length(find(Coordinates(:,2)==y_min)),1);2*find(Coordinates(:,1)==y_max);2*find(Coordinates(:,1)==y_max)-ones(length(find(Coordinates(:,1)==y_max)),1)];
+Dirichletu = zeros(6*(1/h+1),2);
+Dirichletu(:,1)=[2*find(Coordinates(:,1)==x_min);2*find(Coordinates(:,1)==x_min)-ones(length(find(Coordinates(:,1)==x_min)),1);2*find(Coordinates(:,1)==x_max);2*find(Coordinates(:,1)==x_max)-ones(length(find(Coordinates(:,1)==x_max)),1);2*find(Coordinates(:,2)==y_min);2*find(Coordinates(:,2)==y_min)-ones(length(find(Coordinates(:,2)==y_min)),1)];
 Dirichletu(1:2*(1/h+1),2)=0;
 Dirichletu(2*(1/h+1)+1:4*(1/h+1),2)=0;
 Dirichletu(4*(1/h+1)+1:6*(1/h+1),2)=0;
-Dirichletu(6*(1/h+1)+1:8*(1/h+1),2)=0;
+
 
 DirichletValue=0;
 
@@ -61,7 +61,7 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
-Kdr=2*mu+lambda;
+Kdr=1.1*mu+lambda;
 beta=(Kdr);
 A_delta=(2/M+2*tau*kappa+2*alpha^2/beta);
 B_delta=(alpha^2/beta);
