@@ -42,7 +42,8 @@ for i = 1:12
     GaussValuesP2(i,3) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*2/3+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*(2/3)^2+CoefficientsP2(i,6)*1/6*2/3);
 end
 Dirichletp=[];
-Dirichletu = [];
+Dirichletu = [1,0];
+
 
 DirichletValue=0;
 

@@ -41,12 +41,8 @@ for i = 1:12
     GaussValuesP2(i,2) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*2/3 + CoefficientsP2(i,3)*1/6+CoefficientsP2(i,4)*(2/3)^2+CoefficientsP2(i,5)*1/6^2+CoefficientsP2(i,6)*1/6*2/3);
     GaussValuesP2(i,3) = (CoefficientsP2(i,1) + CoefficientsP2(i,2)*1/6 + CoefficientsP2(i,3)*2/3+CoefficientsP2(i,4)*1/6^2+CoefficientsP2(i,5)*(2/3)^2+CoefficientsP2(i,6)*1/6*2/3);
 end
-Dirichletp=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
-Dirichletu = zeros(6*(2/h+1),2);
-Dirichletu(:,1)=[2*find(CoordinatesP2(:,1)==x_min);2*find(CoordinatesP2(:,1)==x_min)-ones(length(find(CoordinatesP2(:,1)==x_min)),1);2*find(CoordinatesP2(:,1)==x_max);2*find(CoordinatesP2(:,1)==x_max)-ones(length(find(CoordinatesP2(:,1)==x_max)),1);2*find(CoordinatesP2(:,2)==y_min);2*find(CoordinatesP2(:,2)==y_min)-ones(length(find(CoordinatesP2(:,2)==y_min)),1)];
-Dirichletu(1:2*(2/h+1),2)=0;
-Dirichletu(2*(2/h+1)+1:4*(2/h+1),2)=0;
-Dirichletu(4*(2/h+1)+1:6*(2/h+1),2)=0;
+Dirichletp=[];
+Dirichletu = [1,0;1,0];
 
 DirichletValue=0;
 
@@ -71,10 +67,10 @@ u0=uexact(CoordinatesP2(:,1),CoordinatesP2(:,2),t_0);
 u_0(1:2:2*(2*sqrt(NN)-1)^2-1)=u0(:,1);
 u_0(2:2:2*(2*sqrt(NN)-1)^2)=u0(:,2);
 p_0=pexact(X,Y,t_0);
-%f_1=@(x,y,t) [0;0];
-%f_2=@(x,y,t) 0;
-f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*t*x.*(x-1)+(alpha*t*y.*(y-1).*(2*x-1))*pressurescale; -mu*2*t*y.*(y-1)+(-mu-lambda)*t*(2*x-1).*(2*y-1)+(-2*mu-lambda)*2*t*x.*(x-1)+(alpha*t*x.*(x-1).*(2*y-1))*pressurescale];
-f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
+f_1=@(x,y,t) [0;0];
+f_2=@(x,y,t) 0;
+%f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*t*x.*(x-1)+(alpha*t*y.*(y-1).*(2*x-1))*pressurescale; -mu*2*t*y.*(y-1)+(-mu-lambda)*t*(2*x-1).*(2*y-1)+(-2*mu-lambda)*2*t*x.*(x-1)+(alpha*t*x.*(x-1).*(2*y-1))*pressurescale];
+%f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
 Kdr=1.1*mu+lambda;
@@ -100,8 +96,8 @@ for  delta = [1:0.05:2.3,delta_opt]
     [u,Au] = FEMLinStrain2DvectorialP2(Coordinates,ElementsP2,2*mu,lambda,Dirichletu,Neumann,g,f_10,alpha*p,zeros(4*NN,1),1,0,CoefficientsP2,GaussValuesP2,CoordinatesP2);
     u_old = u_0;
     p_old = p_0;
-    errorp=norm(p-p_old,inf)/norm(p,inf);
-    erroru=norm(u-u_old,inf)/norm(u,inf);
+    errorp=norm(p-p_old,inf)
+    erroru=norm(u-u_old,inf)
     
     u=rand(size(u));
     p=rand(size(p));

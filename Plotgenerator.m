@@ -2,8 +2,8 @@
 
 p1 = plot(Analysis(1:end-1,1),Analysis(1:end-1,2))
 hold on
-p2 = plot(Analysis(1:end-1,3),Analysis(1:end-1,4),'-*','MarkerSize',10)
-p3 = plot(Analysis(1:end-1,5),Analysis(1:end-1,6),'-o','MarkerSize',10)
+p2 = plot(Analysis(1:end-1,3),Analysis(1:end-1,4),'--*','MarkerSize',10,'MarkerIndices',1:2:length(Analysis(1:end-1,6)))
+p3 = plot(Analysis(1:end-1,5),Analysis(1:end-1,6),'--o','MarkerSize',10,'MarkerIndices',1:2:length(Analysis(1:end-1,6)))
 p4 = plot(Analysis(1:end-1,7),Analysis(1:end-1,8),'.:','MarkerSize',10)
 p5 = plot(Analysis(1:end-1,9),Analysis(1:end-1,10),'-.','MarkerSize',10)
 p6 = plot(Analysis(1:end-1,11),Analysis(1:end-1,12),'--')

@@ -183,7 +183,7 @@ DirichletValue=0;
 
 %% Time
 t_0=0;
-tau=0.5*10^(-1);
+tau=10^(-1);
 T=tau;
 
 %% Problem
@@ -195,7 +195,7 @@ kappa = kappavector(index);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
 pexact = @(x,y,t) pressurescale*t.*x.*y.*(x-1).*(y-1);
-lambda = 0.5*27.778*10^(9); mu=0.5*41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-10);
+lambda = 27.778*10^(9); mu=41.667*10^(9); M=100*10^9; alpha=1; %kappa=10^(-10);
 %lambda = 1; mu=1; M=1; alpha=1; kappa=10^(0);
 u_0=zeros(2*length(CoordinatesP2(:,1)),1);
 u0=uexact(CoordinatesP2(:,1),CoordinatesP2(:,2),t_0);
@@ -208,7 +208,7 @@ f_1=@(x,y,t) [(-2*mu-lambda)*2*t*y.*(y-1)+(-mu-lambda)*(2*x-1).*(2*y-1).*t-mu*2*
 f_2=@(x,y,t) (1/M*x.*y.*(x-1).*(y-1)-kappa*t*2*(x.*(x-1)+y.*(y-1)))*pressurescale+alpha*(y.*(y-1).*(2*x-1)+x.*(x-1).*(2*y-1));
 
 %% Mathematical optima
-Kdr=1.1*mu+lambda;
+Kdr=1.4*mu+lambda;
 beta = Kdr;
 A_delta=(2/M+2*tau*kappa+2*alpha^2/(beta));
 B_delta=(alpha^2/(beta));
