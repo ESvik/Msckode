@@ -1,7 +1,7 @@
 %% BiotAnalysisP1Lshape
 %% MESH
 x_min=0; x_max=1; y_min=0; y_max=1;
-h=1/8;
+h=1/16;
 [x1,y1]=meshgrid(x_min:h:x_max,y_min:h:y_max/2);
 [x2,y2]=meshgrid(x_min:h:x_max/2,y_max/2:h:y_max);
 
@@ -145,8 +145,8 @@ T=0.1;
 %% Problem
 kappavector = [10^(-15),10^(-14),10^(-13),10^(-12),10^(-11),10^(-10)];
 Analysis=zeros(38,12);
-for index=1:6
-kappa = kappavector(index);
+%for index=1:6
+kappa = kappavector(6);
 %pressurescale=1/kappa*10^(-4);
 pressurescale = 10^11;
 uexact = @(x,y,t) [t.*x.*y.*(x-1).*(y-1),t.*x.*y.*(x-1).*(y-1)];
@@ -174,8 +174,8 @@ delta_opt=min(A_delta/(2*B_delta),2);
 
 %% Solver
 counter=1;
-for  delta = [0.7:0.05:2.5,delta_opt]
-    delta
+%for  delta = [0.7:0.05:2.5,delta_opt]
+    delta=1.5
     %L=alpha^2/((mu+lambda)*delta);
     L=alpha^2/((Kdr)*delta);
     t=t_0+tau;
@@ -218,17 +218,17 @@ while t<T+tau
     end
     t=t+tau;
 end
-Analysis(counter,2*index-1)=delta;
-Analysis(counter,2*index)=iterations;
-counter=counter+1;
-end
-plot(Analysis(1:37,2*index-1),Analysis(1:37,2*index))
-hold on
-plot(Analysis(38,2*index-1),Analysis(38,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
-end
-% subplot(3,1,1)
-% trisurf(Elements,X,Y,u(1:2:2*NN-1))
-% subplot(3,1,2)
-% trisurf(Elements,X,Y,u(2:2:2*NN))
-% subplot(3,1,3)
-% trisurf(Elements,X,Y,p)
+% Analysis(counter,2*index-1)=delta;
+% Analysis(counter,2*index)=iterations;
+% counter=counter+1;
+% end
+% plot(Analysis(1:37,2*index-1),Analysis(1:37,2*index))
+% hold on
+% plot(Analysis(38,2*index-1),Analysis(38,2*index),'p','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',10)
+% end
+subplot(3,1,1)
+trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(1:2:2*NN-1))
+subplot(3,1,2)
+trisurf(Elements,Coordinates(:,1),Coordinates(:,2),u(2:2:2*NN))
+subplot(3,1,3)
+trisurf(Elements,Coordinates(:,1),Coordinates(:,2),p)
