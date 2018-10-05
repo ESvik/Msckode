@@ -9,8 +9,9 @@ DT=delaunayTriangulation(X,Y);
 Coordinates=DT.Points;
 Elements=DT.ConnectivityList;
 Neumann=[];
-Dirichlet=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min);find(Coordinates(:,2)==y_max)];
-DirichletValue=0;
+Dirichlet=zeros(3*(1/h+1),2);
+Dirichlet(:,1)=[find(Coordinates(:,1)==x_min);find(Coordinates(:,1)==x_max);find(Coordinates(:,2)==y_min)];
+
 NN=length(Coordinates(:,1));
 
 Coefficients= zeros(3,3);
@@ -59,13 +60,15 @@ for SCHEME=1:4;
 t=t_0+tau;
 u_0 = uexact(X,Y,t_0);
 f=@(x,y) f2(x,y,t);
-L=L_b;
-[u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,DirichletValue,Neumann,g,f,b(u_0)-b(u_0),1,0,Coefficients,GaussValues,bprime,u_0,SCHEME,bprimemax,KIRCHHOFF,0,0,0);
+L=0.8*L_b;
+[u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,Neumann,g,f,b(u_0)-b(u_0),1,0,Coefficients,GaussValues,bprime,u_0,SCHEME,bprimemax,KIRCHHOFF,0,0,0);
 u_old = u_0;
 error=norm(u-u_old,inf)+norm(u-u_old,inf)/norm(u,inf);
 while error > 10^(-12)
         u_prev=u;
-        [u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,DirichletValue,Neumann,g,f,b(u_old)-b(u_prev),0,Au,Coefficients,GaussValues,bprime,u_prev,SCHEME,ModifiedL,KIRCHHOFF,0,0,0);
+        LAMBDA=norm(u_prev-u_old,inf)/tau;
+        ModifiedL=LAMBDA*tau*max(norm(bdoubleprime(u_prev),inf));
+        [u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,Neumann,g,f,b(u_old)-b(u_prev),0,Au,Coefficients,GaussValues,bprime,u_prev,SCHEME,ModifiedL,KIRCHHOFF,0,0,0);
         error=norm(u-u_prev,inf)+norm(u-u_prev,inf)/norm(u,inf);
 
 end
@@ -74,15 +77,16 @@ uPreComputed=u;
 u_0 = uexact(X,Y,t_0);
 f=@(x,y) f2(x,y,t);
 L=0.9*L_b;
-[u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,DirichletValue,Neumann,g,f,b(u_0)-b(u_0),1,0,Coefficients,GaussValues,bprime,u_prev,SCHEME,bprimemax,KIRCHHOFF,0,0,0);
+[u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,Neumann,g,f,b(u_0)-b(u_0),1,0,Coefficients,GaussValues,bprime,u_prev,SCHEME,bprimemax,KIRCHHOFF,0,0,0);
 u_old = u_0;
 error=norm(u-u_old,inf)+norm(u-u_old,inf)/norm(u,inf);
 Errors(SCHEME,1)=norm(u-uPreComputed,inf);
 errorcounter=2;
 while error > 10^(-12)
         u_prev=u;
-        ModifiedL=LAMBDA*tau*max(norm(bdoubleprime(u_prev),inf));
-        [u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,DirichletValue,Neumann,g,f,b(u_old)-b(u_prev),0,Au,Coefficients,GaussValues,bprime,u_prev,SCHEME,ModifiedL,KIRCHHOFF,0,0,0);
+        LAMBDA=norm(u_prev-u_old,inf)/tau;
+        ModifiedL=LAMBDA*tau*max(norm(bdoubleprime(u_prev),inf));        
+        [u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,kappa*tau,Dirichlet,Neumann,g,f,b(u_old)-b(u_prev),0,Au,Coefficients,GaussValues,bprime,u_prev,SCHEME,ModifiedL,KIRCHHOFF,0,0,0);
         error=norm(u-u_prev,inf)+norm(u-u_prev,inf)/norm(u,inf);
         Errors(SCHEME,errorcounter)=norm(u-uPreComputed,inf);
         errorcounter=errorcounter+1;
