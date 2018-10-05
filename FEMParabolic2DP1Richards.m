@@ -1,5 +1,5 @@
 % Solver for C(u,v)+B(u',v')=(f,v) in 2D domain
-% 1 = L-scheme, 2 = Newton, 3 = Modified L-scheme, 4 = local L-scheme
+% 1 = L-scheme, 2 = Modified L-scheme, 3 = Newton, , 4 = local L-scheme
 function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neumann,g,f,fVector,firstrun,Apre,Coefficients,GaussValues,bprime,u_prev,scheme,modifiedconstant,Kirchhoff,kappa,kappaprime,tau)
     NN=length(Coordinates(:,1));
     A=sparse(NN,NN);
