@@ -1,6 +1,6 @@
 % Solver for C(u,v)+B(u',v')=(f,v) in 2D domain
-% 1 = L-scheme, 2 = Modified L-scheme, 3 = Newton, , 4 = local L-scheme
-function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neumann,g,f,fVector,firstrun,Apre,Coefficients,GaussValues,bprime,u_prev,scheme,modifiedconstant,Kirchhoff,kappa,kappaprime,tau)
+% 1 = L-scheme, 2 = Modified L-scheme, 3 = Newton, 4 = local L-scheme
+function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neumann,g,f,fVector,firstrun,Apre,Coefficients,GaussValues,bprime,u_prev,scheme,modifiedconstant,Kirchhoff,kappa,kappaprime,tau,u_old,sw)
     NN=length(Coordinates(:,1));
     A=sparse(NN,NN);
     b=zeros(NN,1);
@@ -56,22 +56,26 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
             
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
+            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
+            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
+            
             BL=zeros(3,1);
             for j= 1:3
                 BL(j) = 1/6*det(ARefTri)*sum((fGauss+fVectGauss).*GaussValues(j,:));
             end
             b(nodes) = b(nodes) + BL;
     
-    
+        end
     
             %Boundary
             for i=1:length(Dirichlet(:,1))
                 A(Dirichlet(i,1),:)=0; A(Dirichlet(i,1),Dirichlet(i,1))=1;
                 b(Dirichlet(i,1))=Dirichlet(i,2);
             end
-            end
+            
     
             for j = 1:size(Neumann,1)
                 nodes = Neumann(j,:);
@@ -79,7 +83,8 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
                 E = vertices(2,:) - vertices(1,:);
                 b(nodes) = b(nodes) + norm(E)/2 * g(sum(vertices)/2);
             end
-        end
+    end
+    
         %[L,U]=lu(A);
     
     
@@ -96,8 +101,12 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             %biotdisplacement
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
+            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
+            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
+            
             BL=zeros(3,1);
             for j= 1:3
                 BL(j) = 1/6*det(ARefTri)*sum((fGauss+fVectGauss).*GaussValues(j,:));
@@ -127,9 +136,13 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
             ARefTriInv = ARefTri^(-1);
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
-            MM=[max(bprime(u_prev(nodes(1)))+m,2*m),max(bprime(u_prev(nodes(2)))+m,2*m),max(bprime(u_prev(nodes(3)))+m,2*m)];
-            MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(MM');
-            M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
+            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
+            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
+            
+            
+            M=[max(bprime(uVectGauss(1))+m,2*m),max(bprime(uVectGauss(2))+m,2*m),max(bprime(uVectGauss(3))+m,2*m)];
+            %MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(MM');
+            %M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
             
             ALdiv=zeros(3,3);
             for i =1:3
@@ -151,11 +164,10 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             %modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
             
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
-            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
-            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
-           
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
+            
             BL=zeros(3,1);
             for j= 1:3
                 BL(j) = 1/6*det(ARefTri)*sum((fGauss+fVectGauss+M.*uVectGauss).*GaussValues(j,:));
@@ -196,10 +208,13 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             %Transformation to refTriangle
             [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
             ARefTriInv = ARefTri^(-1);
-            GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
-            MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(bprime(u_prev(nodes)));
-            M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
-            
+            GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri]; 
+            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
+            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
+            M=bprime(uVectGauss);
+%             MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(bprime(u_prev(nodes)));
+%             M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
+%             
             ALdiv=zeros(3,3);
             for i =1:3
                 for j = 1:3
@@ -220,14 +235,9 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             %modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
             
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
-            uprevCoeff1=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(2*nodes-1));
-            uVectGauss1 = [uprevCoeff1'*[1;GaussNodes(:,1)],uprevCoeff1'*[1;GaussNodes(:,2)],uprevCoeff1'*[1;GaussNodes(:,3)]];
-            uprevCoeff2=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(2*nodes));
-            uVectGauss2 = [uprevCoeff2'*[1;GaussNodes(:,1)],uprevCoeff2'*[1;GaussNodes(:,2)],uprevCoeff2'*[1;GaussNodes(:,3)]];
-            eps = uVectCoeff1(2)^2+0.5*(uVectCoeff1(3)+uVectCoeff2(2))^2+uVectCoeff2(3)^2;
-            div = m
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
             
             
             
@@ -295,10 +305,11 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
   
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
             uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
             uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
             BL=zeros(3,1);
             for j= 1:3
                 BL(j) = 1/6*det(ARefTri)*sum((fGauss+fVectGauss+L*uVectGauss).*GaussValues(j,:));
@@ -342,9 +353,11 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
             ARefTriInv = ARefTri^(-1);
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
-            
-            KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
-            Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
+            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
+            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
+            Kappa = kappa(uVectGauss);
+%             KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
+%             Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
 
             ALdiv=zeros(3,3);
             for i =1:3
@@ -366,9 +379,12 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             %modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
             
+            
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss)+C*uVectGauss;
+            
             BL=zeros(3,1);
             for j= 1:3
                 BL(j) = 1/6*det(ARefTri)*sum((fGauss+fVectGauss).*GaussValues(j,:));
@@ -407,12 +423,16 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
             ARefTriInv = ARefTri^(-1);
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
-            MM=[max(bprime(u_prev(nodes(1)))+m,2*m),max(bprime(u_prev(nodes(2)))+m,2*m),max(bprime(u_prev(nodes(3)))+m,2*m)];
-            MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(MM');
-            M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
-            
-            KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
-            Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
+%             MM=[max(bprime(u_prev(nodes(1)))+m,2*m),max(bprime(u_prev(nodes(2)))+m,2*m),max(bprime(u_prev(nodes(3)))+m,2*m)];
+%             MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(MM');
+%             M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
+            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
+            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];       
+            M=[max(bprime(uVectGauss(1))+m,2*m),max(bprime(uVectGauss(2))+m,2*m),max(bprime(uVectGauss(3))+m,2*m)];
+
+            Kappa = kappa(uVectGauss);
+%             KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
+%             Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
 
             ALdiv=zeros(3,3);
             for i =1:3
@@ -434,11 +454,10 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             %modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
             
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
-            uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
-            uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
-           
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
+            
             BL=zeros(3,1);
             for j= 1:3
                 BL(j) = 1/6*det(ARefTri)*sum((fGauss+fVectGauss+M.*uVectGauss).*GaussValues(j,:));
@@ -478,16 +497,20 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
             ARefTriInv = ARefTri^(-1);
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
-            MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(bprime(u_prev(nodes)));
-            M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
-            KPVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappaprime(u_prev(nodes)));
-            KP = [KPVectCoeff'*[1;GaussNodes(:,1)],KPVectCoeff'*[1;GaussNodes(:,2)],KPVectCoeff'*[1;GaussNodes(:,3)]];
+            %MVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(bprime(u_prev(nodes)));
+            %M = [MVectCoeff'*[1;GaussNodes(:,1)],MVectCoeff'*[1;GaussNodes(:,2)],MVectCoeff'*[1;GaussNodes(:,3)]];
+            %KPVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappaprime(u_prev(nodes)));
+            %KP = [KPVectCoeff'*[1;GaussNodes(:,1)],KPVectCoeff'*[1;GaussNodes(:,2)],KPVectCoeff'*[1;GaussNodes(:,3)]];
+            
             uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
             uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
-           
+            KP=kappaprime(uVectGauss);
+            M=bprime(uVectGauss);
+            Kappa=kappa(uVectGauss);
             
-            KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
-            Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
+            
+            %KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
+            %Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
 
             ALdiv=zeros(3,3);
             for i =1:3
@@ -516,8 +539,11 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             %modes=[2*nodes(1)-1,2*nodes(1),2*nodes(2)-1,2*nodes(2),2*nodes(3)-1,2*nodes(3)];
             
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
+            %VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
+            %fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
             
             BL=zeros(3,1);
             Bnewt=zeros(3,1);
@@ -566,20 +592,21 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             [ARefTri,bRefTri]=RefTriangleMapInv(vertices(:,1),vertices(:,2));
             ARefTriInv = ARefTri^(-1);
             GaussNodes= [ARefTri*[1/6;1/6]+bRefTri,ARefTri*[2/3;1/6]+bRefTri,ARefTri*[1/6;2/3]+bRefTri];
-            KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
-            Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
+%             KappaVectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(kappa(u_prev(nodes)));
+%             Kappa = [KappaVectCoeff'*[1;GaussNodes(:,1)],KappaVectCoeff'*[1;GaussNodes(:,2)],KappaVectCoeff'*[1;GaussNodes(:,3)]];
 
             fGauss = [f(GaussNodes(1,1),GaussNodes(2,1)),f(GaussNodes(1,2),GaussNodes(2,2)),f(GaussNodes(1,3),GaussNodes(2,3))];
-            VectCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(fVector(nodes));
             uprevCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_prev(nodes));
-            fVectGauss = [VectCoeff'*[1;GaussNodes(:,1)],VectCoeff'*[1;GaussNodes(:,2)],VectCoeff'*[1;GaussNodes(:,3)]];
             uVectGauss = [uprevCoeff'*[1;GaussNodes(:,1)],uprevCoeff'*[1;GaussNodes(:,2)],uprevCoeff'*[1;GaussNodes(:,3)]];
+            uoldCoeff=[1,vertices(1,1),vertices(1,2);1,vertices(2,1),vertices(2,2 );1,vertices(3,1),vertices(3,2)]\(u_old(nodes));
+            uoldVectGauss = [uoldCoeff'*[1;GaussNodes(:,1)],uoldCoeff'*[1;GaussNodes(:,2)],uoldCoeff'*[1;GaussNodes(:,3)]];
+            fVectGauss = sw(uoldVectGauss)-sw(uVectGauss);
             eta=max(uprevCoeff(2),uprevCoeff(3));
             alpha=Lb*kappamin; beta = 4*kappamin*bm; sigma =2*bm*eta^2*Lk^2*Lb*tau; delta = 2*kappamin^2*tau; xi = tau^2*eta^2*Lk^2*Lb;
             
             gamma=max(0,(sqrt(beta*(alpha^2*beta+alpha*(-beta*delta+2*beta*xi-sigma*delta+delta^2)+(delta-xi)*(sigma*delta-beta*xi)))-alpha*beta+beta*delta-beta*xi)/(beta*delta));
             L=Lb/(2*(1-gamma)-tau*Lb);
-            
+            Kappa = kappa(uVectGauss);
             
      
             
