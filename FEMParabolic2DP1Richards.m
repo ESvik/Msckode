@@ -522,7 +522,7 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             ALNewt=zeros(3,3);
             for i =1:3
                 for j=1:3
-                    ALNewt(i,j)=1/6*det(ARefTri)*tau*(uprevCoeff(2)*Coefficients(j,2)+uprevCoeff(3)*Coefficients(j,2))*sum(KP.*GaussValues(i,:));
+                    ALNewt(i,j)=1/6*det(ARefTri)*tau*[uprevCoeff(2),uprevCoeff(3)]*(ARefTriInv*ARefTriInv')*[Coefficients(j,2);Coefficients(j,3)]*sum(KP.*GaussValues(i,:));
                 end
             end
     
@@ -549,7 +549,7 @@ function [u,A] = FEMParabolic2DP1Richards(Coordinates,Elements,C,B,Dirichlet,Neu
             Bnewt=zeros(3,1);
             for j= 1:3
                 BL(j) = 1/6*det(ARefTri)*sum((fGauss+fVectGauss+M.*uVectGauss).*GaussValues(j,:));
-                Bnewt(j)=1/6*det(ARefTri)*tau*(uprevCoeff(2)*Coefficients(j,2)+uprevCoeff(3)*Coefficients(j,2))*sum(KP.*uVectGauss);
+                Bnewt(j)=1/6*det(ARefTri)*tau*[uprevCoeff(2),uprevCoeff(3)]*(ARefTriInv*ARefTriInv')*[Coefficients(j,2);Coefficients(j,3)]*sum(KP.*uVectGauss);
             end
             b(nodes) = b(nodes) + BL;
     

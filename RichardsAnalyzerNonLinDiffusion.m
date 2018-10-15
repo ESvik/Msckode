@@ -3,7 +3,7 @@
 %% Mesh
 
 x_min=0; x_max=1; y_min=0; y_max=1;
-h=1/16;
+h=1/4;
 [x,y]=meshgrid(x_min:h:x_max,y_min:h:y_max);
 X=reshape(x,[],1); Y=reshape(y,[],1);
 DT=delaunayTriangulation(X,Y);
@@ -72,7 +72,7 @@ error=norm(u-u_old,inf)+norm(u-u_old,inf)/norm(u,inf);
 %Errors(hhh,1)=log(error);
 errorcounter=2;
 iterations=1;
-while error > 10^(-8)
+while error > 10^(-12)
         u_prev=u;
         LAMBDA=norm(u_prev-u_old,inf)/tau;
         ModifiedL=LAMBDA*tau*norm(bdoubleprime(u_prev),inf);
@@ -95,7 +95,7 @@ error=norm(u-u_old,inf)+norm(u-u_old,inf)/norm(u,inf);
 Errors(SCHEME,1)=norm(u-uPre,2);
 errorcounter=2;
 iterations=1;
-while error > 10^(-8)
+while error > 10^(-12)
         u_prev=u;
         LAMBDA=norm(u_prev-u_old,inf)/tau;
         ModifiedL=LAMBDA*tau*norm(bdoubleprime(u_prev),inf);
@@ -119,7 +119,7 @@ u_old = u_0;
 error=norm(u-u_old,inf)+norm(u-u_old,inf)/norm(u,inf);
 errorcounter=2;
 iterations=1;
-while error > 10^(-8)
+while error > 10^(-12)
         u_prev=u;
         [u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,0,Dirichlet,Neumann,g,f,b(u_old)-b(u_prev),0,Au,Coefficients,GaussValues,bprime,u_prev,2,0,KIRCHHOFF,kappa,kappaprime,tau,u_old,b);
         error=norm(u-u_prev,inf)+norm(u-u_prev,inf)/norm(u,inf);
@@ -138,7 +138,7 @@ error=norm(u-u_old,inf)+norm(u-u_old,inf)/norm(u,inf);
 Errors(5,1)=norm(u-uPre,2);
 errorcounter=2;
 iterations=1;
-while error > 10^(-8)
+while error > 10^(-12)
         u_prev=u;
         [u,Au]=FEMParabolic2DP1Richards(Coordinates,Elements,L,0,Dirichlet,Neumann,g,f,b(u_old)-b(u_prev),0,Au,Coefficients,GaussValues,bprime,u_prev,2,0,KIRCHHOFF,kappa,kappaprime,tau,u_old,b);
         error=norm(u-u_prev,inf)+norm(u-u_prev,inf)/norm(u,inf);
@@ -146,6 +146,7 @@ while error > 10^(-8)
         errorcounter=errorcounter+1;
         iterations=iterations+1;
 end
+
 
 
 order = zeros(5,1);
